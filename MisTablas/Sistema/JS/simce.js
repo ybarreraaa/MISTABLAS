@@ -169,12 +169,159 @@ class SimceModule {
 
   init() {
     this.setupViewEvents();
+    this.updateNavBadge();
+  }
+
+  isUnlocked() {
+    const student = this.app.getStudent();
+    if (student.simceUnlocked === true) return true; // Desbloqueo docente/manual
+    const completed = student.completedTables || [];
+    const required = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    return required.every(num => completed.includes(num));
+  }
+
+  updateNavBadge() {
+    const unlocked = this.isUnlocked();
+    const navBtns = document.querySelectorAll('[data-tab="simce"]');
+    navBtns.forEach(btn => {
+      if (unlocked) {
+        btn.innerHTML = '<span>📝</span> <span>Ensayo SIMCE 🔓</span>';
+        btn.classList.add('unlocked-glow');
+        btn.classList.remove('locked-tab');
+        btn.title = "¡Ensayo SIMCE Desbloqueado! Listo para rendir";
+      } else {
+        btn.innerHTML = '<span>🔒</span> <span>Ensayo SIMCE</span>';
+        btn.classList.remove('unlocked-glow');
+        btn.classList.add('locked-tab');
+        btn.title = "Ensayo SIMCE Bloqueado: Completa las 9 tablas para desbloquear";
+      }
+    });
+  }
+
+  renderSimceState() {
+    this.updateNavBadge();
+
+    const lockedScreen = document.getElementById('simceLockedScreen');
+    const introScreen = document.getElementById('simceIntroScreen');
+    const testingContainer = document.getElementById('simceTestingContainer');
+    const resultScreen = document.getElementById('simceResultScreen');
+
+    if (testingContainer) testingContainer.style.display = 'none';
+    if (resultScreen) resultScreen.style.display = 'none';
+
+    const unlocked = this.isUnlocked();
+    const student = this.app.getStudent();
+
+    if (!unlocked) {
+      if (lockedScreen) lockedScreen.style.display = 'block';
+      if (introScreen) introScreen.style.display = 'none';
+      this.renderLockedProgress();
+    } else {
+      if (lockedScreen) lockedScreen.style.display = 'none';
+      if (introScreen) introScreen.style.display = 'block';
+      const notice = document.getElementById('simceUnlockedNotice');
+      if (notice) {
+        notice.style.display = 'block';
+        if (student.simceUnlocked && (!student.completedTables || student.completedTables.length < 9)) {
+          notice.textContent = '🔑 Ensayo SIMCE Habilitado en Modo Evaluación Docente.';
+        } else {
+          notice.textContent = '🎉 ¡FELICITACIONES! Has dominado las 9 tablas requeridas. ¡El Ensayo SIMCE está Desbloqueado!';
+        }
+      }
+    }
+  }
+
+  renderLockedProgress() {
+    const student = this.app.getStudent();
+    const completed = student.completedTables || [];
+    const required = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const doneCount = required.filter(n => completed.includes(n)).length;
+    const percent = Math.round((doneCount / 9) * 100);
+
+    const countText = document.getElementById('simceUnlockCountText');
+    const progressFill = document.getElementById('simceUnlockProgressFill');
+    if (countText) countText.textContent = `${doneCount} de 9 Tablas Dominadas (${percent}%)`;
+    if (progressFill) progressFill.style.width = `${percent}%`;
+
+    const checklist = document.getElementById('simceTablesChecklist');
+    if (checklist) {
+      checklist.innerHTML = '';
+      required.forEach(num => {
+        const isDone = completed.includes(num);
+        const card = document.createElement('div');
+        card.className = `simce-check-card ${isDone ? 'completed' : 'pending'}`;
+        card.innerHTML = `
+          <div class="simce-check-header">
+            <span class="simce-check-num">Tabla del ${num}</span>
+            <span class="simce-check-badge ${isDone ? 'badge-done' : 'badge-wait'}">
+              ${isDone ? '✅ Dominada' : '⏳ Pendiente'}
+            </span>
+          </div>
+          <div class="simce-check-action-hint">
+            ${isDone ? '⭐ 3 estrellas conseguidas' : '👉 Toca para aprender y completar'}
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          this.app.sound.playClick();
+          this.app.switchMainTab('tables');
+          if (this.app.tablesModule) {
+            this.app.tablesModule.openTableModal(num);
+          }
+        });
+
+        checklist.appendChild(card);
+      });
+    }
+
+    const teacherBtn = document.getElementById('btnTeacherUnlockToggle');
+    if (teacherBtn) {
+      teacherBtn.textContent = student.simceUnlocked 
+        ? '🔒 Volver a Bloquear (Modo Progreso Normal)' 
+        : '🔓 Desbloquear Ahora (Modo Evaluación)';
+    }
+  }
+
+  toggleTeacherUnlock() {
+    const student = this.app.getStudent();
+    student.simceUnlocked = !student.simceUnlocked;
+    this.app.saveStudent(student);
+
+    if (student.simceUnlocked) {
+      this.app.sound.playLevelUp();
+      this.app.triggerConfetti();
+      this.app.showToast('🎉 ¡Ensayo SIMCE desbloqueado para evaluación!', 'star');
+    } else {
+      this.app.sound.playClick();
+      this.app.showToast('🔒 Ensayo SIMCE bloqueado según progreso de tablas.', 'success');
+    }
+
+    this.renderSimceState();
   }
 
   setupViewEvents() {
     const btnStart = document.getElementById('btnStartSimce');
     if (btnStart) {
       btnStart.addEventListener('click', () => this.startSimceTest());
+    }
+
+    const btnGoUnlock = document.getElementById('btnGoUnlockTables');
+    if (btnGoUnlock) {
+      btnGoUnlock.addEventListener('click', () => {
+        this.app.sound.playClick();
+        const student = this.app.getStudent();
+        const completed = student.completedTables || [];
+        const nextPending = [2, 3, 4, 5, 6, 7, 8, 9, 10].find(n => !completed.includes(n)) || 2;
+        this.app.switchMainTab('tables');
+        if (this.app.tablesModule) {
+          this.app.tablesModule.openTableModal(nextPending);
+        }
+      });
+    }
+
+    const btnTeacher = document.getElementById('btnTeacherUnlockToggle');
+    if (btnTeacher) {
+      btnTeacher.addEventListener('click', () => this.toggleTeacherUnlock());
     }
 
     const btnPrev = document.getElementById('simceBtnPrev');

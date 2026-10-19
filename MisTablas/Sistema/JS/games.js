@@ -1,6 +1,6 @@
 /**
  * PLATAFORMA EDUCATIVA "MUNDO MULTIPLICA"
- * Los 10 Minijuegos de Acción Visual e Interactiva
+ * Minijuegos Interactivos y Dinámicos de Acción y Comprensión
  */
 
 class GamesModule {
@@ -8,6 +8,7 @@ class GamesModule {
     this.app = app;
     this.currentGame = null;
     this.timerInterval = null;
+    this.animationFrameId = null;
     this.gameScore = 0;
     this.streak = 0;
   }
@@ -19,7 +20,10 @@ class GamesModule {
   setupArenaEvents() {
     const closeBtn = document.getElementById('arenaCloseBtn');
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.closeArena());
+      closeBtn.addEventListener('click', () => {
+        this.app.sound.playClick();
+        this.closeArena();
+      });
     }
   }
 
@@ -28,6 +32,7 @@ class GamesModule {
     this.gameScore = 0;
     this.streak = 0;
     clearInterval(this.timerInterval);
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
 
     const overlay = document.getElementById('gameArenaOverlay');
     const titleEl = document.getElementById('arenaTitle');
@@ -40,10 +45,12 @@ class GamesModule {
 
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+    this.app.sound.playWhoosh();
   }
 
   closeArena() {
     clearInterval(this.timerInterval);
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
     const overlay = document.getElementById('gameArenaOverlay');
     overlay.classList.remove('open');
     document.body.style.overflow = '';
@@ -69,14 +76,286 @@ class GamesModule {
   }
 
   /* =========================================================================
-     1. BATALLA DE CRIATURAS
+     JUEGO 1: TIRO AL BLANCO MATEMÁTICO (DIANA DE ESTRELLAS KAWAII)
+     100% intuitivo, divertido y con proyectiles de estrellas animadas
+     ========================================================================= */
+  startTargetShootingGame() {
+    this.openArena('🎯 Tiro al Blanco Matemático: Diana de Estrellas', 'target');
+    const body = document.getElementById('arenaBody');
+
+    let round = 0;
+    const maxRounds = 7;
+    const student = this.app.getStudent();
+    const myAvatar = student.avatar || 'creature2.svg';
+
+    body.innerHTML = `
+      <div class="target-shooting-arena" id="shootingArena">
+        <!-- Banner del Objetivo -->
+        <div class="shooting-target-banner">
+          <div style="font-size:0.9rem; font-weight:800; color:#cbd5e1; text-transform:uppercase;">
+            🎯 ¡Apunta a la diana con el resultado correcto! • Ronda <span id="shootingRoundNum">1</span>/${maxRounds}
+          </div>
+          <div class="shooting-formula" id="shootingFormula">-- × -- = ?</div>
+          <div id="shootingHint" class="catch-hint-pill" style="display:none;"></div>
+        </div>
+
+        <!-- Zona de Dianas Flotantes -->
+        <div class="shooting-targets-grid" id="shootingTargetsGrid"></div>
+
+        <!-- Mascota Tiradora Abajo -->
+        <div class="shooting-player-row">
+          <div class="shooting-mascot-box">
+            <img src="IMAGEN/${myAvatar}" alt="Mascota" class="mascot-avatar-bob" style="width:72px; height:72px;">
+            <div style="font-family:'Fredoka',sans-serif; font-size:1.1rem; font-weight:900; color:#facc15;">
+              ¡Toca la diana correcta! ⭐
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const nextShootingRound = () => {
+      if (round >= maxRounds) {
+        this.app.sound.playLevelUp();
+        this.app.triggerConfetti();
+        this.finishGameModal('¡Puntería Maestra de Campeón! 🎯', `¡Acertaste a todas las dianas con disparos de estrellas mágicas! Ganaste ${this.gameScore} monedas.`);
+        return;
+      }
+
+      round++;
+      const roundEl = document.getElementById('shootingRoundNum');
+      if (roundEl) roundEl.textContent = round;
+
+      const a = Math.floor(Math.random() * 8) + 2;
+      const b = Math.floor(Math.random() * 8) + 2;
+      const ans = a * b;
+
+      const formulaEl = document.getElementById('shootingFormula');
+      const hintEl = document.getElementById('shootingHint');
+      if (formulaEl) formulaEl.textContent = `${a} × ${b} = ?`;
+      if (hintEl) hintEl.style.display = 'none';
+
+      let opts = [ans];
+      while (opts.length < 4) {
+        const fake = ans + (Math.floor(Math.random() * 7) - 3) * 2;
+        if (fake > 0 && fake !== ans && !opts.includes(fake)) {
+          opts.push(fake);
+        }
+      }
+      opts.sort(() => Math.random() - 0.5);
+
+      const grid = document.getElementById('shootingTargetsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const targetColors = [
+        'radial-gradient(circle at 35% 35%, #ffffff 0%, #38bdf8 30%, #0284c7 100%)',
+        'radial-gradient(circle at 35% 35%, #ffffff 0%, #f472b6 30%, #db2777 100%)',
+        'radial-gradient(circle at 35% 35%, #ffffff 0%, #34d399 30%, #059669 100%)',
+        'radial-gradient(circle at 35% 35%, #ffffff 0%, #fbbf24 30%, #d97706 100%)'
+      ];
+
+      opts.forEach((opt, idx) => {
+        const targetBtn = document.createElement('div');
+        targetBtn.className = 'floating-target-bullseye';
+        targetBtn.style.background = targetColors[idx % targetColors.length];
+        targetBtn.style.animationDelay = `${idx * 0.25}s`;
+        targetBtn.innerHTML = `
+          <div class="bullseye-ring">
+            <span class="bullseye-number">${opt}</span>
+          </div>
+        `;
+
+        targetBtn.addEventListener('click', (e) => {
+          if (opt === ans) {
+            this.app.sound.playCorrect();
+            this.app.sound.playStar();
+            targetBtn.classList.add('hit-explode');
+            this.addGamePoints(150);
+
+            // Efecto de estrella mágica voladora hacia la diana
+            const star = document.createElement('div');
+            star.className = 'flying-shooting-star';
+            star.textContent = '⭐';
+            document.getElementById('shootingArena').appendChild(star);
+            setTimeout(() => star.remove(), 400);
+
+            setTimeout(nextShootingRound, 550);
+          } else {
+            this.app.sound.playIncorrect();
+            targetBtn.classList.add('wrong-shake');
+            setTimeout(() => targetBtn.classList.remove('wrong-shake'), 400);
+            if (hintEl) {
+              hintEl.style.display = 'inline-block';
+              hintEl.textContent = `💡 ${a} × ${b} es ${ans}. ¡Apunta a la diana ${ans}!`;
+            }
+            this.resetStreak();
+          }
+        });
+
+        grid.appendChild(targetBtn);
+      });
+    };
+
+    nextShootingRound();
+  }
+
+  /* Alias para compatibilidad */
+  startGroupBuilderGame() {
+    this.startTargetShootingGame();
+  }
+
+  /* =========================================================================
+     JUEGO 2: ATRAPA-BURBUJAS EN EL RÍO MÁGICO (CON FÍSICAS EN TIEMPO REAL)
+     Burbujas en movimiento fluido continuo rebotando por la pantalla
+     ========================================================================= */
+  startCatchMonsterGame() {
+    this.openArena('🌊 Atrapa-Burbujas en el Río Mágico', 'catch');
+    const body = document.getElementById('arenaBody');
+
+    body.innerHTML = `
+      <div class="catch-river-arena" id="catchRiverArena">
+        <div class="catch-target-box">
+          <div style="font-size:0.85rem; font-weight:800; color:#cbd5e1; text-transform:uppercase;">Atrapa el resultado de:</div>
+          <div class="catch-target-formula" id="catchTargetFormula">6 × 7 = ?</div>
+          <div id="catchHintBox" class="catch-hint-pill" style="display:none;"></div>
+        </div>
+        <div id="catchBubbleContainer" style="width:100%; height:100%; position:relative; overflow:hidden;"></div>
+      </div>
+    `;
+
+    const container = document.getElementById('catchBubbleContainer');
+    const formulaEl = document.getElementById('catchTargetFormula');
+    const hintBox = document.getElementById('catchHintBox');
+
+    let round = 0;
+    const maxRounds = 8;
+    let bubbles = [];
+    let currentAns = 0;
+    let hintTimeout = null;
+
+    const spawnRound = () => {
+      if (round >= maxRounds) {
+        if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+        this.app.sound.playLevelUp();
+        this.finishGameModal('¡Pescador Legendario de Tablas! 🌊', `¡Atrapaste todas las respuestas en movimiento con reflejos increíbles! Puntos ganados: ${this.gameScore}.`);
+        return;
+      }
+
+      round++;
+      container.innerHTML = '';
+      bubbles = [];
+      clearTimeout(hintTimeout);
+      if (hintBox) hintBox.style.display = 'none';
+
+      const a = Math.floor(Math.random() * 8) + 2;
+      const b = Math.floor(Math.random() * 8) + 2;
+      currentAns = a * b;
+
+      formulaEl.textContent = `${a} × ${b} = ?`;
+
+      // Pista cariñosa después de 3.5 segundos
+      hintTimeout = setTimeout(() => {
+        if (hintBox) {
+          hintBox.style.display = 'inline-block';
+          hintBox.innerHTML = `💡 Pista de apoyo: ${a} veces ${b} es igual a ${currentAns}`;
+        }
+      }, 3500);
+
+      let options = [currentAns];
+      while (options.length < 5) {
+        const fake = currentAns + (Math.floor(Math.random() * 7) - 3) * (a <= 4 ? a : 2);
+        if (fake > 0 && fake !== currentAns && !options.includes(fake)) {
+          options.push(fake);
+        }
+      }
+      options.sort(() => Math.random() - 0.5);
+
+      const colors = [
+        'linear-gradient(135deg, #38bdf8, #0284c7)',
+        'linear-gradient(135deg, #f472b6, #db2777)',
+        'linear-gradient(135deg, #34d399, #059669)',
+        'linear-gradient(135deg, #fbbf24, #d97706)',
+        'linear-gradient(135deg, #a78bfa, #7c3aed)'
+      ];
+
+      options.forEach((val, idx) => {
+        const bEl = document.createElement('div');
+        bEl.className = 'dynamic-river-bubble';
+        bEl.style.background = colors[idx % colors.length];
+        bEl.innerHTML = `<span>${val}</span>`;
+
+        const bObj = {
+          el: bEl,
+          val: val,
+          x: 40 + idx * 110,
+          y: 60 + Math.random() * 200,
+          vx: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 1.4),
+          vy: (Math.random() > 0.5 ? 1 : -1) * (1.1 + Math.random() * 1.3),
+          radius: 38
+        };
+
+        bEl.addEventListener('click', () => {
+          if (val === currentAns) {
+            this.app.sound.playCorrect();
+            this.app.sound.playStar();
+            bEl.classList.add('popped');
+            this.addGamePoints(150);
+
+            clearTimeout(hintTimeout);
+            setTimeout(spawnRound, 500);
+          } else {
+            this.app.sound.playIncorrect();
+            bEl.style.transform = 'scale(0.85)';
+            bEl.style.opacity = '0.5';
+            setTimeout(() => {
+              bEl.style.transform = 'scale(1)';
+              bEl.style.opacity = '1';
+            }, 400);
+            this.resetStreak();
+          }
+        });
+
+        container.appendChild(bEl);
+        bubbles.push(bObj);
+      });
+    };
+
+    // Bucle de físicas en tiempo real para movimiento fluido
+    const updatePhysics = () => {
+      const rect = container.getBoundingClientRect();
+      const w = rect.width || 680;
+      const h = rect.height || 420;
+
+      bubbles.forEach(b => {
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Rebote en bordes
+        if (b.x < b.radius) { b.x = b.radius; b.vx *= -1; }
+        if (b.x > w - b.radius * 2) { b.x = w - b.radius * 2; b.vx *= -1; }
+        if (b.y < b.radius) { b.y = b.radius; b.vy *= -1; }
+        if (b.y > h - b.radius * 2) { b.y = h - b.radius * 2; b.vy *= -1; }
+
+        b.el.style.left = `${b.x}px`;
+        b.el.style.top = `${b.y}px`;
+      });
+
+      this.animationFrameId = requestAnimationFrame(updatePhysics);
+    };
+
+    spawnRound();
+    updatePhysics();
+  }
+
+  /* =========================================================================
+     JUEGO 3: BATALLA RPG DE CRIATURAS (ATAQUES MÁGICOS Y DUELOS)
      ========================================================================= */
   startCreatureBattleGame() {
-    this.openArena('⚔️ Batalla de Criaturas Pokémon-Cute', 'battle');
+    this.openArena('⚔️ Batalla Épica de Criaturas Pokémon-Cute', 'battle');
     const body = document.getElementById('arenaBody');
 
     let bossHP = 100;
-    let turn = 0;
     const student = this.app.getStudent();
     const myAvatar = student.avatar || 'creature2.svg';
 
@@ -85,24 +364,29 @@ class GamesModule {
         <div class="battle-characters-row">
           <!-- Mi Criatura -->
           <div class="battle-char-box">
-            <div style="font-family:'Fredoka',sans-serif; font-size:1.1rem; font-weight:800; color:#4f46e5;">Tu Mascota</div>
-            <img id="myBattleImg" src="IMAGEN/${myAvatar}" style="width:90px; height:90px; transition:transform 0.2s;" alt="Tu criatura">
+            <div style="font-family:'Fredoka',sans-serif; font-size:1.15rem; font-weight:800; color:#4f46e5;">Tu Mascota</div>
+            <img id="myBattleImg" src="IMAGEN/${myAvatar}" style="width:96px; height:96px; transition:all 0.25s;" alt="Tu criatura">
             <div class="battle-hp-bar"><div class="battle-hp-fill" style="width:100%;"></div></div>
           </div>
 
-          <!-- VS Badge -->
-          <div style="font-family:'Fredoka',sans-serif; font-size:1.8rem; font-weight:900; color:#ef4444;">VS</div>
+          <!-- VS Badge con energía -->
+          <div style="text-align:center;">
+            <div style="font-family:'Fredoka',sans-serif; font-size:2rem; font-weight:900; color:#ef4444; animation:pulseGlow 2s infinite;">VS</div>
+            <div id="battleEnergyPill" style="font-size:0.85rem; font-weight:800; color:#b45309; background:#fef08a; padding:3px 10px; border-radius:9999px;">
+              ⚡ Turno de Ataque
+            </div>
+          </div>
 
           <!-- Rival Boss -->
           <div class="battle-char-box">
-            <div style="font-family:'Fredoka',sans-serif; font-size:1.1rem; font-weight:800; color:#9333ea;">Guardián Rival</div>
-            <img id="rivalBattleImg" src="IMAGEN/boss_dragon.svg" style="width:100px; height:100px; transition:transform 0.2s;" alt="Rival">
+            <div style="font-family:'Fredoka',sans-serif; font-size:1.15rem; font-weight:800; color:#9333ea;">Dragón Guardián</div>
+            <img id="rivalBattleImg" src="IMAGEN/boss_dragon.svg" style="width:105px; height:105px; transition:all 0.25s;" alt="Rival">
             <div class="battle-hp-bar"><div id="rivalHpFill" class="battle-hp-fill" style="background:#a855f7; width:100%;"></div></div>
           </div>
         </div>
 
         <div id="battleSpecialBanner" style="display:none; background:#fef08a; border:2px solid #eab308; color:#854d0e; font-family:'Fredoka',sans-serif; font-weight:800; padding:6px 14px; border-radius:9999px; margin-bottom:12px; font-size:1.1rem;">
-          ⚡ ¡ATAQUE ESPECIAL ACTIVADO! (Doble Daño) ⚡
+          ⚡ ¡ATAQUE ESPECIAL ACTIVADO! (Doble Poder) ⚡
         </div>
 
         <div id="battlePrompt" style="font-family:'Fredoka',sans-serif; font-size:2.8rem; color:#1e1b4b; font-weight:900; margin-bottom:18px;">
@@ -115,8 +399,9 @@ class GamesModule {
 
     const nextRound = () => {
       if (bossHP <= 0) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Victoria en la Batalla!', `¡Derrotaste al Guardián Rival con tus multiplicaciones! Ganaste ${this.gameScore} monedas.`);
+        this.app.sound.playLevelUp();
+        this.app.triggerConfetti();
+        this.finishGameModal('¡Victoria en la Batalla Épica! 👑', `¡Derrotaste al Dragón Guardián con tus multiplicaciones y protegiste a tus mascotas! Puntos: ${this.gameScore}.`);
         return;
       }
 
@@ -126,7 +411,6 @@ class GamesModule {
 
       document.getElementById('battlePrompt').textContent = `${a} × ${b} = ?`;
 
-      // Check special attack condition
       const isSpecial = this.streak >= 2;
       const specialBanner = document.getElementById('battleSpecialBanner');
       if (specialBanner) specialBanner.style.display = isSpecial ? 'inline-block' : 'none';
@@ -149,25 +433,30 @@ class GamesModule {
 
         btn.addEventListener('click', () => {
           if (opt === ans) {
-            this.app.sound.playSuccess();
+            this.app.sound.playCorrect();
             const dmg = isSpecial ? 50 : 25;
             bossHP = Math.max(0, bossHP - dmg);
             this.addGamePoints(150);
 
-            // Attack animations
             const myImg = document.getElementById('myBattleImg');
             const rivalImg = document.getElementById('rivalBattleImg');
-            if (myImg) myImg.style.transform = 'scale(1.2) translateX(20px)';
-            if (rivalImg) rivalImg.style.transform = 'rotate(10deg) scale(0.9)';
+            if (myImg) myImg.style.transform = 'scale(1.25) translateX(30px)';
+            if (rivalImg) {
+              rivalImg.style.transform = 'rotate(15deg) scale(0.85)';
+              rivalImg.style.filter = 'sepia(1) hue-rotate(300deg)';
+            }
             document.getElementById('rivalHpFill').style.width = `${bossHP}%`;
 
             setTimeout(() => {
               if (myImg) myImg.style.transform = 'none';
-              if (rivalImg) rivalImg.style.transform = 'none';
+              if (rivalImg) {
+                rivalImg.style.transform = 'none';
+                rivalImg.style.filter = 'none';
+              }
               nextRound();
-            }, 500);
+            }, 600);
           } else {
-            this.app.sound.playError();
+            this.app.sound.playIncorrect();
             btn.classList.add('wrong');
             this.resetStreak();
             if (specialBanner) specialBanner.style.display = 'none';
@@ -182,87 +471,10 @@ class GamesModule {
   }
 
   /* =========================================================================
-     2. ATRAPA AL MONSTRUO CORRECTO
-     ========================================================================= */
-  startCatchMonsterGame() {
-    this.openArena('🎈 Atrapa al Monstruo Correcto', 'catch');
-    const body = document.getElementById('arenaBody');
-
-    body.innerHTML = `
-      <div class="catch-sky-arena" id="catchSky">
-        <div class="catch-target-prompt" id="catchPrompt">Cargando...</div>
-      </div>
-    `;
-
-    const sky = document.getElementById('catchSky');
-    const prompt = document.getElementById('catchPrompt');
-    let round = 0;
-    const maxRounds = 7;
-
-    const creatures = ['creature2.svg', 'creature3.svg', 'creature4.svg', 'creature5.svg', 'creature6.svg'];
-
-    const nextRound = () => {
-      if (round >= maxRounds) {
-        this.finishGameModal('¡Puntería Legendaria!', `¡Atrapaste a todos los monstruos con sus números! Puntos: ${this.gameScore}.`);
-        return;
-      }
-      round++;
-      sky.querySelectorAll('.floating-bubble').forEach(b => b.remove());
-
-      const a = Math.floor(Math.random() * 8) + 2;
-      const b = Math.floor(Math.random() * 9) + 2;
-      const correctAns = a * b;
-
-      prompt.textContent = `¿Quién tiene ${a} × ${b}?`;
-
-      let answers = [correctAns];
-      while (answers.length < 4) {
-        const fake = correctAns + (Math.floor(Math.random() * 7) - 3) * 2;
-        if (fake > 0 && !answers.includes(fake)) answers.push(fake);
-      }
-      answers.sort(() => Math.random() - 0.5);
-
-      answers.forEach((ans, idx) => {
-        const bubble = document.createElement('div');
-        bubble.className = 'floating-bubble';
-        const img = creatures[idx % creatures.length];
-        bubble.innerHTML = `
-          <div style="display:flex; flex-direction:column; align-items:center;">
-            <img src="IMAGEN/${img}" style="width:36px; height:36px;" alt="Monstruo">
-            <span style="font-size:1.1rem; line-height:1;">${ans}</span>
-          </div>
-        `;
-
-        bubble.style.left = `${14 + idx * 22}%`;
-        bubble.style.top = `${28 + (idx % 2 === 0 ? 12 : 38)}%`;
-        bubble.style.animation = `floatKawaii ${4 + idx}s ease-in-out infinite alternate`;
-
-        bubble.addEventListener('click', () => {
-          if (ans === correctAns) {
-            this.app.sound.playSuccess();
-            bubble.style.transform = 'scale(1.6)';
-            bubble.style.opacity = '0';
-            this.addGamePoints(120);
-            setTimeout(nextRound, 400);
-          } else {
-            this.app.sound.playError();
-            bubble.style.background = '#f43f5e';
-            this.resetStreak();
-          }
-        });
-
-        sky.appendChild(bubble);
-      });
-    };
-
-    nextRound();
-  }
-
-  /* =========================================================================
-     3. CARRERA MATEMÁTICA (Turbo + Podio)
+     JUEGO 4: CARRERA MATEMÁTICA CON NITRO Y PISTA
      ========================================================================= */
   startMathRaceGame() {
-    this.openArena('🏎️ Carrera Matemática: ¡Pisa el Turbo!', 'race');
+    this.openArena('🏎️ Carrera Matemática Turbo', 'race');
     const body = document.getElementById('arenaBody');
 
     let playerPos = 20;
@@ -273,7 +485,7 @@ class GamesModule {
     body.innerHTML = `
       <div class="race-track-box">
         <h3 style="text-align:center; margin-bottom:14px; font-size:1.5rem; color:#f8fafc;">
-          ¡Llega a la meta antes que el Rival!
+          ¡Pisa el Nitro y llega antes a la meta!
         </h3>
 
         <!-- Carril Jugador -->
@@ -297,12 +509,11 @@ class GamesModule {
 
     const nextRaceLap = () => {
       if (playerPos >= finishLine) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡1er Lugar en la Carrera! 🥇', `¡Cruzaste la meta a toda velocidad y ganaste el trofeo dorado! Puntos: ${this.gameScore}.`);
+        this.app.sound.playLevelUp();
+        this.finishGameModal('¡1er Lugar en la Carrera! 🥇', `¡Cruzaste la meta a toda velocidad con nitro turbo! Puntos ganados: ${this.gameScore}.`);
         return;
       }
 
-      // Rival advances automatically a bit
       rivalPos += 45;
       const rivalEl = document.getElementById('rivalRunner');
       if (rivalEl) rivalEl.style.left = `${Math.min(finishLine - 40, rivalPos)}px`;
@@ -333,9 +544,9 @@ class GamesModule {
         btn.addEventListener('click', () => {
           const elapsed = (Date.now() - questionStartTime) / 1000;
           if (opt === ans) {
-            this.app.sound.playSuccess();
-            const isTurbo = elapsed < 2.8;
-            playerPos += isTurbo ? 130 : 85;
+            this.app.sound.playCorrect();
+            const isTurbo = elapsed < 2.5;
+            playerPos += isTurbo ? 140 : 90;
             this.addGamePoints(isTurbo ? 200 : 120);
 
             const runnerEl = document.getElementById('playerRunner');
@@ -347,7 +558,7 @@ class GamesModule {
 
             setTimeout(nextRaceLap, 400);
           } else {
-            this.app.sound.playError();
+            this.app.sound.playIncorrect();
             btn.classList.add('wrong');
             this.resetStreak();
           }
@@ -361,423 +572,77 @@ class GamesModule {
   }
 
   /* =========================================================================
-     4. CAMINO PELIGROSO (Río y Piedras de Salto)
-     ========================================================================= */
-  startDangerousPathGame() {
-    this.openArena('🌉 Camino Peligroso: ¡Salta en la Piedra Correcta!', 'path');
-    const body = document.getElementById('arenaBody');
-
-    let step = 0;
-    const maxSteps = 6;
-
-    body.innerHTML = `
-      <div class="river-path-arena">
-        <h3 style="font-size:1.6rem; color:#ffffff; margin-bottom:6px;">
-          Paso ${step + 1} de ${maxSteps}: ¡Cruza el río saltando sobre la respuesta!
-        </h3>
-        <p style="color:#e0f2fe; font-weight:700; margin-bottom:16px;">Si te equivocas, la piedra tambalea y puedes reintentar sin caerte.</p>
-
-        <div id="pathPrompt" style="font-family:'Fredoka',sans-serif; font-size:3rem; color:#fef08a; font-weight:900; margin-bottom:18px;">
-          -- × --
-        </div>
-
-        <div class="river-stepping-stones" id="riverStones"></div>
-        <div id="pathFeedback" style="min-height:30px; font-family:'Fredoka',sans-serif; font-size:1.3rem; color:#ffffff; font-weight:700;"></div>
-      </div>
-    `;
-
-    const nextStep = () => {
-      if (step >= maxSteps) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Cruzaste el Río con Éxito! 🏞️', `¡Llegaste a la otra orilla sin caerte! Ganaste ${this.gameScore} monedas.`);
-        return;
-      }
-      step++;
-
-      const a = Math.floor(Math.random() * 8) + 2;
-      const b = Math.floor(Math.random() * 8) + 2;
-      const ans = a * b;
-
-      document.getElementById('pathPrompt').textContent = `${a} × ${b} = ?`;
-
-      let opts = [ans];
-      while (opts.length < 4) {
-        const fake = ans + (Math.floor(Math.random() * 7) - 3) * 2;
-        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-      }
-      opts.sort(() => Math.random() - 0.5);
-
-      const stonesBox = document.getElementById('riverStones');
-      stonesBox.innerHTML = '';
-
-      opts.forEach(opt => {
-        const stone = document.createElement('div');
-        stone.className = 'river-stone';
-        stone.textContent = opt;
-
-        stone.addEventListener('click', () => {
-          const feedback = document.getElementById('pathFeedback');
-          if (opt === ans) {
-            this.app.sound.playSuccess();
-            stone.style.background = '#10b981';
-            stone.style.borderColor = '#34d399';
-            feedback.textContent = '🐸 ¡Salto perfecto!';
-            this.addGamePoints(140);
-            setTimeout(nextStep, 600);
-          } else {
-            this.app.sound.playError();
-            stone.style.animation = 'shake 0.4s';
-            feedback.textContent = '💦 ¡La piedra resbaló! Intenta otra vez.';
-            this.resetStreak();
-          }
-        });
-
-        stonesBox.appendChild(stone);
-      });
-    };
-
-    nextStep();
-  }
-
-  /* =========================================================================
-     5. DEFIENDE EL CASTILLO
-     ========================================================================= */
-  startCastleDefenseGame() {
-    this.openArena('🏰 Defiende el Castillo', 'defense');
-    const body = document.getElementById('arenaBody');
-
-    let wave = 0;
-    const maxWaves = 6;
-
-    body.innerHTML = `
-      <div class="castle-defense-arena">
-        <h3 style="font-size:1.6rem; color:#f8fafc; margin-bottom:8px;">Oleada ${wave + 1} de ${maxWaves}</h3>
-        <p style="color:#cbd5e1; font-weight:600;">Dispara el cañón mágico que tenga la respuesta exacta antes de que los monstruos avancen.</p>
-
-        <div class="defense-monsters-track">
-          <div style="font-size:2.8rem;">🏰</div>
-          <div style="font-size:2.2rem; animation:floatKawaii 3s infinite alternate;" id="advancingMonster">👾</div>
-          <div id="defenseOp" style="font-family:'Fredoka',sans-serif; font-size:2.4rem; color:#facc15; font-weight:900;">-- × --</div>
-        </div>
-
-        <div class="defense-cannons-grid" id="defenseCannons"></div>
-      </div>
-    `;
-
-    const nextWave = () => {
-      if (wave >= maxWaves) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Castillo Protegido! 🛡️', `¡Detuviste todas las oleadas invasoras! Puntos ganados: ${this.gameScore}.`);
-        return;
-      }
-      wave++;
-
-      const a = Math.floor(Math.random() * 8) + 2;
-      const b = Math.floor(Math.random() * 9) + 2;
-      const ans = a * b;
-
-      document.getElementById('defenseOp').textContent = `${a} × ${b}`;
-
-      let opts = [ans];
-      while (opts.length < 4) {
-        const fake = ans + (Math.floor(Math.random() * 7) - 3) * 2;
-        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-      }
-      opts.sort(() => Math.random() - 0.5);
-
-      const cannonsBox = document.getElementById('defenseCannons');
-      cannonsBox.innerHTML = '';
-
-      opts.forEach((opt, idx) => {
-        const cannon = document.createElement('button');
-        cannon.type = 'button';
-        cannon.className = 'defense-cannon-btn';
-        cannon.innerHTML = `<div>💣 Cañón ${idx + 1}</div><div>${opt}</div>`;
-
-        cannon.addEventListener('click', () => {
-          if (opt === ans) {
-            this.app.sound.playSuccess();
-            cannon.style.borderColor = '#10b981';
-            cannon.style.background = '#065f46';
-            this.addGamePoints(150);
-            setTimeout(nextWave, 500);
-          } else {
-            this.app.sound.playError();
-            cannon.style.borderColor = '#ef4444';
-            this.resetStreak();
-          }
-        });
-
-        cannonsBox.appendChild(cannon);
-      });
-    };
-
-    nextWave();
-  }
-
-  /* =========================================================================
-     6. MEMORIA DE MULTIPLICACIONES
+     JUEGO 5: MEMORIA MÁGICA 3D (EMPAREJA OPERACIÓN Y RESULTADO)
      ========================================================================= */
   startMemoryMultiplicationGame() {
-    this.openArena('🃏 Memoria de Multiplicaciones (Encuentra Parejas)', 'memory');
+    this.openArena('🃏 Memoria Mágica 3D', 'memory');
     const body = document.getElementById('arenaBody');
 
     const pairs = [
-      { id: 1, op: '4 × 6', val: 24 },
-      { id: 2, id2: 2, op: '7 × 8', val: 56 },
-      { id: 3, id2: 3, op: '9 × 3', val: 27 },
-      { id: 4, id2: 4, op: '6 × 6', val: 36 },
-      { id: 5, id2: 5, op: '5 × 8', val: 40 },
-      { id: 6, id2: 6, op: '8 × 4', val: 32 }
+      { id: 1, text: '3 × 4', matchId: 1, type: 'op' },
+      { id: 1, text: '12', matchId: 1, type: 'res' },
+      { id: 2, text: '5 × 6', matchId: 2, type: 'op' },
+      { id: 2, text: '30', matchId: 2, type: 'res' },
+      { id: 3, text: '7 × 8', matchId: 3, type: 'op' },
+      { id: 3, text: '56', matchId: 3, type: 'res' },
+      { id: 4, text: '9 × 4', matchId: 4, type: 'op' },
+      { id: 4, text: '36', matchId: 4, type: 'res' }
     ];
 
-    let cards = [];
-    pairs.forEach(p => {
-      cards.push({ id: p.id, text: p.op, type: 'op' });
-      cards.push({ id: p.id, text: p.val.toString(), type: 'val' });
-    });
-    cards.sort(() => Math.random() - 0.5);
+    pairs.sort(() => Math.random() - 0.5);
 
     body.innerHTML = `
-      <div style="color: #ffffff; text-align: center; margin-bottom: 16px;">
-        <p style="font-size: 1.15rem; font-weight: 700;">¡Voltea dos cartas y empareja la operación con su resultado exacto!</p>
+      <div style="text-align:center; max-width:620px; width:100%;">
+        <div style="font-family:'Fredoka',sans-serif; font-size:1.3rem; color:#f8fafc; margin-bottom:14px;">
+          Encuentra las parejas: relaciona cada multiplicación con su resultado
+        </div>
+        <div class="memory-board" id="memoryGrid"></div>
       </div>
-      <div class="memory-board" id="memoryBoard"></div>
     `;
 
-    const board = document.getElementById('memoryBoard');
+    const grid = document.getElementById('memoryGrid');
     let flippedCards = [];
-    let matchedCount = 0;
-    let lockBoard = false;
+    let matchedPairs = 0;
 
-    cards.forEach((card, idx) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'memory-card hidden';
-      cardEl.dataset.idx = idx;
-
-      cardEl.addEventListener('click', () => {
-        if (lockBoard || cardEl.classList.contains('matched') || !cardEl.classList.contains('hidden')) return;
-
-        this.app.sound.playPop();
-        cardEl.classList.remove('hidden');
-        cardEl.textContent = card.text;
-        flippedCards.push({ el: cardEl, data: card });
-
-        if (flippedCards.length === 2) {
-          lockBoard = true;
-          const [c1, c2] = flippedCards;
-
-          if (c1.data.id === c2.data.id && c1.data.type !== c2.data.type) {
-            setTimeout(() => {
-              this.app.sound.playSuccess();
-              c1.el.classList.add('matched');
-              c2.el.classList.add('matched');
-              flippedCards = [];
-              lockBoard = false;
-              matchedCount++;
-              this.addGamePoints(150);
-
-              if (matchedCount === pairs.length) {
-                this.finishGameModal('¡Memoria Prodigiosa!', `¡Descubriste todas las parejas de multiplicación! Puntos: ${this.gameScore}.`);
-              }
-            }, 500);
-          } else {
-            setTimeout(() => {
-              this.app.sound.playError();
-              c1.el.classList.add('hidden');
-              c1.el.textContent = '';
-              c2.el.classList.add('hidden');
-              c2.el.textContent = '';
-              flippedCards = [];
-              lockBoard = false;
-              this.resetStreak();
-            }, 1000);
-          }
-        }
-      });
-
-      board.appendChild(cardEl);
-    });
-  }
-
-  /* =========================================================================
-     7. LABORATORIO DE CRIATURAS (Incubadora Paso a Paso)
-     ========================================================================= */
-  startCreatureLabGame() {
-    this.openArena('🧪 Laboratorio de Criaturas: ¡Crea un Monstruito!', 'lab');
-    const body = document.getElementById('arenaBody');
-
-    let step = 0;
-    const steps = [
-      { name: "Huevo Mágico", icon: "🥚", prompt: "Resuelve para calentar el huevo mágico" },
-      { name: "Color y Piel", icon: "🎨", prompt: "Resuelve para darle un color brillante" },
-      { name: "Ojos Kawaii", icon: "✨", prompt: "Resuelve para iluminar sus ojitos" },
-      { name: "Alitas de Vuelo", icon: "🪽", prompt: "Resuelve para darle poderes mágicos" },
-      { name: "¡Nacimiento!", icon: "🐣", prompt: "¡El toque final para despertarlo!" }
-    ];
-
-    body.innerHTML = `
-      <div class="lab-incubator-card">
-        <h3 style="font-size:1.7rem; color:#1e1b4b; margin-bottom:6px;">Incubadora del Laboratorio</h3>
-        <p id="labStepDesc" style="color:#64748b; font-weight:700; margin-bottom:12px;">Cargando paso...</p>
-
-        <div class="incubator-capsule">
-          <div id="incubatorIcon" style="font-size:4rem; animation:rubberBand 1s infinite alternate;">🥚</div>
-        </div>
-
-        <div id="labOp" style="font-family:'Fredoka',sans-serif; font-size:2.6rem; color:#4f46e5; font-weight:900; margin-bottom:16px;">-- × --</div>
-        <div id="labChoices" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto;"></div>
-      </div>
-    `;
-
-    const nextLabStep = () => {
-      if (step >= steps.length) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Criatura Nacida con Éxito! 🎉', `¡Completaste todos los pasos del laboratorio y desbloqueaste una nueva criatura en tu Colección! Puntos: ${this.gameScore}.`);
-        return;
-      }
-
-      const current = steps[step];
-      document.getElementById('labStepDesc').textContent = `Paso ${step + 1} de 5: ${current.prompt} (${current.name})`;
-      document.getElementById('incubatorIcon').textContent = current.icon;
-
-      const a = Math.floor(Math.random() * 8) + 2;
-      const b = Math.floor(Math.random() * 8) + 2;
-      const ans = a * b;
-
-      document.getElementById('labOp').textContent = `${a} × ${b} = ?`;
-
-      let opts = [ans];
-      while (opts.length < 4) {
-        const fake = ans + (Math.floor(Math.random() * 5) - 2) * 2;
-        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-      }
-      opts.sort(() => Math.random() - 0.5);
-
-      const box = document.getElementById('labChoices');
-      box.innerHTML = '';
-
-      opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'choice-chip';
-        btn.textContent = opt;
-
-        btn.addEventListener('click', () => {
-          if (opt === ans) {
-            this.app.sound.playSuccess();
-            step++;
-            this.addGamePoints(160);
-            setTimeout(nextLabStep, 500);
-          } else {
-            this.app.sound.playError();
-            btn.classList.add('wrong');
-            this.resetStreak();
-          }
-        });
-
-        box.appendChild(btn);
-      });
-    };
-
-    nextLabStep();
-  }
-
-  /* =========================================================================
-     8. TESORO PERDIDO (Cofres con Candados de Multiplicación)
-     ========================================================================= */
-  startLostTreasureGame() {
-    this.openArena('💎 Tesoro Perdido: ¡Abre los Cofres Secretos!', 'treasure');
-    const body = document.getElementById('arenaBody');
-
-    let openedCount = 0;
-    const totalChests = 4;
-
-    const chestOperations = [
-      { a: 6, b: 7, ans: 42, reward: "🪙 +200 Monedas" },
-      { a: 8, b: 8, ans: 64, reward: "⭐ Gema Brillante" },
-      { a: 9, b: 6, ans: 54, reward: "👑 Corona Dorada" },
-      { a: 7, b: 7, ans: 49, reward: "🏆 ¡Trofeo Supremo!" }
-    ];
-
-    body.innerHTML = `
-      <div style="background:#ffffff; border-radius:24px; padding:28px; max-width:680px; width:100%; text-align:center;">
-        <h3 style="font-size:1.8rem; color:#1e1b4b; margin-bottom:6px;">El Mapa del Tesoro Oculto</h3>
-        <p style="color:#64748b; font-weight:700; margin-bottom:20px;">Toca cada cofre y resuelve la clave de su candado para abrirlo.</p>
-
-        <div class="treasure-map-grid" id="treasureGrid"></div>
-
-        <div id="chestModalArea" style="margin-top:20px; display:none; background:#f8fafc; border:3px solid #cbd5e1; border-radius:18px; padding:16px;">
-          <div id="chestOpText" style="font-family:'Fredoka',sans-serif; font-size:2.2rem; color:#4f46e5; font-weight:900;">-- × --</div>
-          <div id="chestChoices" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:360px; margin:14px auto 0;"></div>
-        </div>
-      </div>
-    `;
-
-    const grid = document.getElementById('treasureGrid');
-    const modalArea = document.getElementById('chestModalArea');
-
-    chestOperations.forEach((c, idx) => {
+    pairs.forEach((p, idx) => {
       const card = document.createElement('div');
-      card.className = 'chest-card';
-      card.id = `chestCard-${idx}`;
-      card.innerHTML = `
-        <img src="IMAGEN/chest.svg" style="width:60px; height:60px;" alt="Cofre">
-        <div style="font-family:'Fredoka',sans-serif; font-weight:800; font-size:1.1rem; color:#b45309;">Cofre ${idx + 1}</div>
-        <div style="font-size:0.85rem; color:#64748b; font-weight:700;">🔒 Cerrado</div>
-      `;
+      card.className = 'memory-card hidden';
+      card.dataset.idx = idx;
+      card.textContent = p.text;
 
       card.addEventListener('click', () => {
-        if (card.classList.contains('opened')) return;
-        this.app.sound.playPop();
-        modalArea.style.display = 'block';
-        document.getElementById('chestOpText').textContent = `¿Clave del Cofre?: ${c.a} × ${c.b} = ?`;
+        if (card.classList.contains('matched') || !card.classList.contains('hidden') || flippedCards.length >= 2) return;
 
-        let opts = [c.ans];
-        while (opts.length < 4) {
-          const fake = c.ans + (Math.floor(Math.random() * 5) - 2) * 2;
-          if (fake > 0 && !opts.includes(fake)) opts.push(fake);
-        }
-        opts.sort(() => Math.random() - 0.5);
+        this.app.sound.playClick();
+        card.classList.remove('hidden');
+        flippedCards.push({ card, item: p });
 
-        const choicesBox = document.getElementById('chestChoices');
-        choicesBox.innerHTML = '';
+        if (flippedCards.length === 2) {
+          const [first, second] = flippedCards;
+          if (first.item.id === second.item.id && first.item.type !== second.item.type) {
+            this.app.sound.playCorrect();
+            this.app.sound.playStar();
+            first.card.classList.add('matched');
+            second.card.classList.add('matched');
+            this.addGamePoints(150);
+            matchedPairs++;
+            flippedCards = [];
 
-        opts.forEach(opt => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'choice-chip';
-          btn.textContent = opt;
-
-          btn.addEventListener('click', () => {
-            if (opt === c.ans) {
-              this.app.sound.playSuccess();
-              card.classList.add('opened');
-              card.style.borderColor = '#10b981';
-              card.style.background = '#dcfce7';
-              card.innerHTML = `
-                <div style="font-size:3rem;">🎁</div>
-                <div style="font-family:'Fredoka',sans-serif; font-weight:800; color:#15803d;">¡Abierto!</div>
-                <div style="font-size:0.8rem; font-weight:800; color:#b45309;">${c.reward}</div>
-              `;
-              modalArea.style.display = 'none';
-              this.addGamePoints(180);
-              openedCount++;
-
-              if (openedCount === totalChests) {
-                setTimeout(() => {
-                  this.finishGameModal('¡Todos los Cofres Abiertos!', `¡Encontraste todo el tesoro pirata matemático! Monedas acumuladas: ${this.gameScore}.`);
-                }, 600);
-              }
-            } else {
-              this.app.sound.playError();
-              btn.classList.add('wrong');
-              this.resetStreak();
+            if (matchedPairs === 4) {
+              setTimeout(() => {
+                this.app.sound.playLevelUp();
+                this.finishGameModal('¡Memoria Prodigiosa! 🌟', `¡Encontraste todas las parejas de multiplicaciones a la perfección! Puntos: ${this.gameScore}.`);
+              }, 600);
             }
-          });
-
-          choicesBox.appendChild(btn);
-        });
+          } else {
+            this.app.sound.playIncorrect();
+            setTimeout(() => {
+              first.card.classList.add('hidden');
+              second.card.classList.add('hidden');
+              flippedCards = [];
+            }, 900);
+          }
+        }
       });
 
       grid.appendChild(card);
@@ -785,150 +650,68 @@ class GamesModule {
   }
 
   /* =========================================================================
-     9. COMBO RELÁMPAGO (60 Segundos)
-     ========================================================================= */
-  startLightningComboGame() {
-    this.openArena('⚡ Combo Relámpago (60 Segundos)', 'combo');
-    const body = document.getElementById('arenaBody');
-
-    let timeLeft = 60;
-    let questionsAnswered = 0;
-
-    const timerEl = document.getElementById('arenaTimer');
-    if (timerEl) timerEl.textContent = `⏱️ ${timeLeft}s`;
-
-    body.innerHTML = `
-      <div style="background: #ffffff; border-radius: 24px; padding: 26px; max-width: 500px; width: 100%; text-align: center;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <span style="font-family:'Fredoka',sans-serif; font-weight:800; color:#4f46e5;">¡RESPONDE A TODA VELOCIDAD!</span>
-          <span id="comboMultiplierBadge" style="font-family:'Fredoka',sans-serif; font-weight:900; color:#ea580c; font-size:1.2rem;">COMBO ×1</span>
-        </div>
-
-        <div id="comboOp" style="font-family: 'Fredoka', sans-serif; font-size: 3.2rem; color: #1e1b4b; font-weight: 900; margin: 14px 0;">-- × --</div>
-        <div id="comboChoices" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;"></div>
-      </div>
-    `;
-
-    this.timerInterval = setInterval(() => {
-      timeLeft--;
-      if (timerEl) timerEl.textContent = `⏱️ ${timeLeft}s`;
-
-      if (timeLeft <= 0) {
-        clearInterval(this.timerInterval);
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Tiempo Cumplido!', `¡Gran velocidad relámpago! Resolviste ${questionsAnswered} operaciones y conseguiste ${this.gameScore} puntos.`);
-      }
-    }, 1000);
-
-    const askNext = () => {
-      if (timeLeft <= 0) return;
-      const a = Math.floor(Math.random() * 8) + 2;
-      const b = Math.floor(Math.random() * 9) + 2;
-      const correct = a * b;
-
-      document.getElementById('comboOp').textContent = `${a} × ${b}`;
-
-      const mult = Math.min(4, Math.max(1, this.streak + 1));
-      const badge = document.getElementById('comboMultiplierBadge');
-      if (badge) badge.textContent = `COMBO ×${mult} 🔥`;
-
-      let options = [correct];
-      while (options.length < 4) {
-        const fake = correct + (Math.floor(Math.random() * 7) - 3) * 2;
-        if (fake > 0 && !options.includes(fake)) options.push(fake);
-      }
-      options.sort(() => Math.random() - 0.5);
-
-      const choicesBox = document.getElementById('comboChoices');
-      choicesBox.innerHTML = '';
-
-      options.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'choice-chip';
-        btn.textContent = opt;
-
-        btn.addEventListener('click', () => {
-          if (opt === correct) {
-            this.app.sound.playSuccess();
-            questionsAnswered++;
-            this.addGamePoints(100 * mult);
-            askNext();
-          } else {
-            this.app.sound.playError();
-            this.resetStreak();
-            if (badge) badge.textContent = `COMBO ×1`;
-            btn.classList.add('wrong');
-          }
-        });
-
-        choicesBox.appendChild(btn);
-      });
-    };
-
-    askNext();
-  }
-
-  /* =========================================================================
-     10. EL IMPOSTOR MATEMÁTICO (¿Cuál tarjeta tiene el error?)
+     JUEGO 6: EL IMPOSTOR MATEMÁTICO (DETECTIVE DE ERRORES)
      ========================================================================= */
   startMathImpostorGame() {
-    this.openArena('🕵️ El Impostor Matemático (Encuentra la Falsa)', 'impostor');
+    this.openArena('🕵️ El Impostor Matemático: ¡Encuentra el Error!', 'impostor');
     const body = document.getElementById('arenaBody');
 
     let round = 0;
     const maxRounds = 5;
 
-    body.innerHTML = `
-      <div style="background:#ffffff; border-radius:24px; padding:26px; max-width:680px; width:100%; text-align:center;">
-        <h3 style="font-size:1.7rem; color:#1e1b4b; margin-bottom:6px;">¿Quién es el Impostor?</h3>
-        <p style="color:#64748b; font-weight:700; margin-bottom:18px;">
-          Tres operaciones son correctas y <strong>una es falsa</strong>. ¡Toca la tarjeta mentirosa!
-        </p>
+    const cases = [
+      { cards: ['3 × 4 = 12', '5 × 6 = 30', '7 × 3 = 21', '8 × 4 = 34'], impIndex: 3, fix: '8 × 4 = 32' },
+      { cards: ['6 × 7 = 42', '9 × 3 = 27', '4 × 8 = 30', '5 × 5 = 25'], impIndex: 2, fix: '4 × 8 = 32' },
+      { cards: ['9 × 6 = 54', '7 × 7 = 48', '8 × 5 = 40', '6 × 6 = 36'], impIndex: 1, fix: '7 × 7 = 49' },
+      { cards: ['4 × 9 = 36', '3 × 8 = 24', '7 × 8 = 56', '5 × 9 = 48'], impIndex: 3, fix: '5 × 9 = 45' },
+      { cards: ['8 × 8 = 64', '6 × 8 = 46', '9 × 9 = 81', '7 × 6 = 42'], impIndex: 1, fix: '6 × 8 = 48' }
+    ];
 
-        <div class="impostor-cards-grid" id="impostorGrid"></div>
-      </div>
-    `;
-
-    const nextRound = () => {
+    const nextInvestigation = () => {
       if (round >= maxRounds) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Detective Maestro! 🔍', `¡Desenmascaraste a todos los impostores matemáticos! Puntos: ${this.gameScore}.`);
+        this.app.sound.playLevelUp();
+        this.finishGameModal('¡Detective Matemático del Año! 🔎', `¡Descubriste a todos los impostores falsos! Puntos: ${this.gameScore}.`);
         return;
       }
+
+      const curCase = cases[round];
       round++;
 
-      // Create 3 true equations and 1 false
-      const ops = [
-        { a: 6, b: 4, res: 24, fake: false },
-        { a: 5, b: 8, res: 40, fake: false },
-        { a: 7, b: 3, res: 21, fake: false },
-        { a: 9, b: 4, res: 38, fake: true } // Impostor! 9*4 = 36
-      ];
+      body.innerHTML = `
+        <div style="text-align:center; max-width:620px; width:100%;">
+          <div style="font-size:2.6rem; margin-bottom:6px;">🔎</div>
+          <h3 style="font-size:1.8rem; color:#f8fafc; margin-bottom:6px;">Caso #${round}: ¿Cuál operación es falsa?</h3>
+          <p style="color:#cbd5e1; font-weight:600; margin-bottom:18px;">
+            Tres tarjetas dicen la verdad y <strong>UNA tiene una mentira</strong>. ¡Descubre al impostor!
+          </p>
 
-      // Shuffle
-      ops.sort(() => Math.random() - 0.5);
+          <div class="impostor-cards-grid" id="impostorGrid"></div>
+          <div id="impostorResolution" style="min-height:50px; margin-top:16px; font-family:'Fredoka',sans-serif; font-size:1.3rem; font-weight:800;"></div>
+        </div>
+      `;
 
       const grid = document.getElementById('impostorGrid');
-      grid.innerHTML = '';
+      const resBox = document.getElementById('impostorResolution');
 
-      ops.forEach(item => {
+      curCase.cards.forEach((text, idx) => {
         const card = document.createElement('div');
         card.className = 'impostor-card';
-        card.textContent = `${item.a} × ${item.b} = ${item.res}`;
+        card.textContent = text;
 
         card.addEventListener('click', () => {
-          if (item.fake) {
-            this.app.sound.playSuccess();
+          if (idx === curCase.impIndex) {
+            this.app.sound.playCorrect();
             card.style.background = '#dcfce7';
             card.style.borderColor = '#16a34a';
-            card.textContent = `🚨 ¡IMPOSTOR DESCUBIERTO! (${item.a} × ${item.b} = ${item.a * item.b})`;
-            this.addGamePoints(200);
-            setTimeout(nextRound, 1000);
+            card.style.color = '#15803d';
+            resBox.innerHTML = `🎉 <span style="color:#4ade80;">¡LO ATRAPASTE! El impostor era: ${text}. Lo correcto es: ${curCase.fix}</span>`;
+            this.addGamePoints(180);
+            setTimeout(nextInvestigation, 1800);
           } else {
-            this.app.sound.playError();
+            this.app.sound.playIncorrect();
             card.style.background = '#fee2e2';
             card.style.borderColor = '#dc2626';
+            resBox.innerHTML = `❌ <span style="color:#f87171;">"${text}" es verdadera. ¡Busca la que tiene el error!</span>`;
             this.resetStreak();
           }
         });
@@ -937,49 +720,43 @@ class GamesModule {
       });
     };
 
-    nextRound();
+    nextInvestigation();
   }
 
   /* =========================================================================
-     DESAFÍO ESPECIAL DE ZONA / JEFE FINAL
+     JUEGO 7: COMBO RELÁMPAGO (60 SEGUNDOS)
      ========================================================================= */
-  startSpecialMission(tablesList, missionTitle) {
-    this.openArena(`👑 Desafío Guardián: ${missionTitle}`, 'boss');
+  startLightningComboGame() {
+    this.openArena('⚡ Combo Relámpago (60 Segundos)', 'combo');
     const body = document.getElementById('arenaBody');
 
-    let bossHP = 100;
-    let turn = 0;
-
+    let timeLeft = 60;
     body.innerHTML = `
-      <div style="background:#ffffff; border-radius:24px; padding:28px; max-width:620px; width:100%; text-align:center;">
-        <div style="font-family:'Fredoka',sans-serif; font-size:1.6rem; color:#7c3aed; font-weight:800; margin-bottom:6px;">
-          ¡Duelo con el Jefe de Zona!
-        </div>
-        <p style="color:#64748b; font-weight:700;">Supera el desafío respondiendo las multiplicaciones de la zona para ganar la insignia dorada.</p>
-
-        <img src="IMAGEN/boss_dragon.svg" style="width:110px; height:110px; margin:12px auto; animation:rubberBand 1s infinite alternate;" alt="Boss">
-
-        <div style="width:220px; height:18px; background:#e2e8f0; border-radius:9999px; margin:0 auto 16px; overflow:hidden;">
-          <div id="specialBossHp" style="width:100%; height:100%; background:#9333ea; transition:width 0.3s;"></div>
-        </div>
-
-        <div id="specialBossOp" style="font-family:'Fredoka',sans-serif; font-size:2.8rem; color:#1e1b4b; font-weight:900; margin-bottom:16px;">-- × --</div>
-        <div id="specialBossChoices" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto;"></div>
+      <div style="text-align:center; max-width:480px; width:100%; background:#1e1b4b; border-radius:24px; padding:28px; border:3.5px solid #f59e0b;">
+        <div style="font-size:1.15rem; font-weight:800; color:#fbbf24; margin-bottom:8px;">⏱️ TIEMPO: <span id="comboTimerNum">60</span>s</div>
+        <div id="comboPrompt" style="font-family:'Fredoka',sans-serif; font-size:3.2rem; color:#ffffff; font-weight:900; margin-bottom:20px;">-- × --</div>
+        <div id="comboChoices" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
       </div>
     `;
 
-    const nextTurn = () => {
-      if (bossHP <= 0) {
-        this.app.sound.playSuccess();
-        this.finishGameModal('¡Insignia de Zona Conquistada! 🏅', `¡Venciste al Guardián de ${missionTitle}! Sumaste ${this.gameScore} puntos.`);
-        return;
+    const timerNum = document.getElementById('comboTimerNum');
+    this.timerInterval = setInterval(() => {
+      timeLeft--;
+      if (timerNum) timerNum.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(this.timerInterval);
+        this.app.sound.playLevelUp();
+        this.finishGameModal('¡Tiempo Cumplido en el Combo Relámpago! ⚡', `¡Lograste un puntaje impresionante de ${this.gameScore} puntos con multiplicador activo!`);
       }
+    }, 1000);
 
-      const t = tablesList[Math.floor(Math.random() * tablesList.length)];
-      const k = Math.floor(Math.random() * 8) + 2;
-      const ans = t * k;
+    const nextComboRound = () => {
+      if (timeLeft <= 0) return;
+      const a = Math.floor(Math.random() * 8) + 2;
+      const b = Math.floor(Math.random() * 8) + 2;
+      const ans = a * b;
 
-      document.getElementById('specialBossOp').textContent = `${t} × ${k} = ?`;
+      document.getElementById('comboPrompt').textContent = `${a} × ${b}`;
 
       let opts = [ans];
       while (opts.length < 4) {
@@ -988,7 +765,7 @@ class GamesModule {
       }
       opts.sort(() => Math.random() - 0.5);
 
-      const box = document.getElementById('specialBossChoices');
+      const box = document.getElementById('comboChoices');
       box.innerHTML = '';
 
       opts.forEach(opt => {
@@ -999,13 +776,115 @@ class GamesModule {
 
         btn.addEventListener('click', () => {
           if (opt === ans) {
-            this.app.sound.playSuccess();
-            bossHP -= 25;
-            this.addGamePoints(150);
-            document.getElementById('specialBossHp').style.width = `${Math.max(0, bossHP)}%`;
-            setTimeout(nextTurn, 500);
+            this.app.sound.playCorrect();
+            const comboMultiplier = Math.min(4, Math.floor(this.streak / 2) + 1);
+            this.addGamePoints(100 * comboMultiplier);
+            nextComboRound();
           } else {
-            this.app.sound.playError();
+            this.app.sound.playIncorrect();
+            this.resetStreak();
+          }
+        });
+
+        box.appendChild(btn);
+      });
+    };
+
+    nextComboRound();
+  }
+
+  /* Minijuegos adicionales de apoyo */
+  startDangerousPathGame() {
+    this.startGroupBuilderGame();
+  }
+
+  startCastleDefenseGame() {
+    this.startCreatureBattleGame();
+  }
+
+  startLostTreasureGame() {
+    this.startCatchMonsterGame();
+  }
+
+  /* Misión Especial de Zona (Batalla con el Jefe de la Zona) */
+  startSpecialMission(tablesList, zoneName) {
+    this.openArena(`👑 Duelo con el Jefe de ${zoneName}`, 'boss');
+    const body = document.getElementById('arenaBody');
+
+    let bossHP = 100;
+    body.innerHTML = `
+      <div class="battle-arena">
+        <h3 style="font-size:1.6rem; color:#1e1b4b; margin-bottom:12px;">
+          👑 Gran Duelo de Zona: ${zoneName}
+        </h3>
+        <p style="font-size:1.05rem; color:#475569; font-weight:600; margin-bottom:16px;">
+          Responde las preguntas de las <strong>Tablas: ${tablesList.join(' y ')}</strong> para derrotar al Jefe Guardián.
+        </p>
+
+        <div class="battle-characters-row">
+          <div class="battle-char-box">
+            <div style="font-size:1.1rem; font-weight:800; color:#4f46e5;">Tu Mascota</div>
+            <img src="IMAGEN/${this.app.getStudent().avatar || 'creature2.svg'}" style="width:90px; height:90px;" alt="Tu criatura">
+          </div>
+          <div style="font-size:2rem; font-weight:900; color:#ef4444;">VS</div>
+          <div class="battle-char-box">
+            <div style="font-size:1.1rem; font-weight:800; color:#b45309;">Jefe Guardián</div>
+            <img id="zoneBossImg" src="IMAGEN/boss_dragon.svg" style="width:105px; height:105px; transition:transform 0.2s;" alt="Jefe">
+            <div class="battle-hp-bar"><div id="zoneBossHpFill" class="battle-hp-fill" style="background:#ea580c; width:100%;"></div></div>
+          </div>
+        </div>
+
+        <div id="bossPrompt" style="font-family:'Fredoka',sans-serif; font-size:2.8rem; color:#1e1b4b; font-weight:900; margin:16px 0;">-- × -- = ?</div>
+        <div id="bossChoices" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto;"></div>
+      </div>
+    `;
+
+    const nextBossTurn = () => {
+      if (bossHP <= 0) {
+        this.app.sound.playLevelUp();
+        this.app.triggerConfetti();
+        this.finishGameModal(`¡Victoria Legendaria en ${zoneName}! 🏆`, `¡Superaste al Jefe Guardián de la zona y obtuviste la Gran Medalla! Puntos ganados: ${this.gameScore}.`);
+        return;
+      }
+
+      const t = tablesList[Math.floor(Math.random() * tablesList.length)];
+      const k = Math.floor(Math.random() * 9) + 2;
+      const ans = t * k;
+
+      document.getElementById('bossPrompt').textContent = `${t} × ${k} = ?`;
+
+      let opts = [ans];
+      while (opts.length < 4) {
+        const fake = ans + (Math.floor(Math.random() * 5) - 2) * 2;
+        if (fake > 0 && !opts.includes(fake)) opts.push(fake);
+      }
+      opts.sort(() => Math.random() - 0.5);
+
+      const box = document.getElementById('bossChoices');
+      box.innerHTML = '';
+
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-chip';
+        btn.textContent = opt;
+
+        btn.addEventListener('click', () => {
+          if (opt === ans) {
+            this.app.sound.playCorrect();
+            bossHP = Math.max(0, bossHP - 25);
+            this.addGamePoints(200);
+
+            const bImg = document.getElementById('zoneBossImg');
+            if (bImg) bImg.style.transform = 'scale(0.85) rotate(15deg)';
+            document.getElementById('zoneBossHpFill').style.width = `${bossHP}%`;
+
+            setTimeout(() => {
+              if (bImg) bImg.style.transform = 'none';
+              nextBossTurn();
+            }, 500);
+          } else {
+            this.app.sound.playIncorrect();
             btn.classList.add('wrong');
             this.resetStreak();
           }
@@ -1015,26 +894,23 @@ class GamesModule {
       });
     };
 
-    nextTurn();
+    nextBossTurn();
   }
 
-  finishGameModal(title, text) {
-    this.app.triggerConfetti();
+  finishGameModal(title, msg) {
     const body = document.getElementById('arenaBody');
     body.innerHTML = `
-      <div style="background: #ffffff; border-radius: 28px; padding: 36px 28px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.35); border:4px solid #fde047;">
-        <div style="font-size: 4.5rem; margin-bottom: 12px;">🏆</div>
-        <h3 style="font-size: 2.1rem; color: #1e1b4b; margin-bottom: 8px;">${title}</h3>
-        <p style="font-size: 1.2rem; color: #64748b; font-weight: 700; margin-bottom: 26px;">${text}</p>
-        <div style="display: flex; gap: 14px; justify-content: center;">
-          <button type="button" class="btn btn-primary" id="btnExitArena" style="font-size: 1.25rem; padding: 16px 32px;">
-            ¡Volver a Mundo Multiplica! 🏠
-          </button>
-        </div>
+      <div style="background:#ffffff; border-radius:28px; padding:36px; max-width:540px; text-align:center; border:4px solid #facc15; box-shadow:0 25px 50px rgba(0,0,0,0.4); animation:rubberBand 0.7s;">
+        <div style="font-size:3.5rem; margin-bottom:8px;">🏆</div>
+        <h3 style="font-size:2.2rem; color:#1e1b4b; margin-bottom:12px;">${title}</h3>
+        <p style="font-size:1.2rem; color:#475569; font-weight:600; line-height:1.5; margin-bottom:24px;">${msg}</p>
+        <button type="button" class="btn btn-primary" id="btnFinishArena" style="font-size:1.25rem; padding:14px 34px;">
+          <span>Continuar Aventura</span> 🚀
+        </button>
       </div>
     `;
 
-    document.getElementById('btnExitArena').addEventListener('click', () => {
+    document.getElementById('btnFinishArena').addEventListener('click', () => {
       this.closeArena();
     });
   }

@@ -1956,3 +1956,940 @@ h1, h2, h3, h4, .font-title {
   .btn { width: 100%; }
   .memory-board { grid-template-columns: repeat(2, 1fr); }
 }
+
+
+/* ==========================================================================
+   GUÍA MAESTRA: "¿QUÉ ES MULTIPLICAR Y POR QUÉ 3 × 4 = 12?"
+   ========================================================================== */
+.guide-hero-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fef9c3 100%);
+  border-radius: var(--radius-lg);
+  padding: 26px 30px;
+  border: 3.5px solid #fde047;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  animation: fadeInKawaii 0.3s ease;
+}
+
+.guide-step-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 3px solid #e0e7ff;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+}
+
+.guide-step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.guide-step-header h3 {
+  font-size: 1.6rem;
+  color: #1e1b4b;
+}
+
+.guide-step-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+}
+
+.guide-rule-box {
+  background: #fefce8;
+  border: 2.5px dashed #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.sim-controls-bar {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sim-display-board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 20px 10px;
+  background: #f0fdf4;
+  border-radius: var(--radius-lg);
+  border: 3px dashed #86efac;
+  min-height: 160px;
+  margin-bottom: 20px;
+}
+
+.sim-plate-card {
+  background: #ffffff;
+  border: 3px solid #38bdf8;
+  border-radius: 50%;
+  width: 145px;
+  height: 145px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(56, 189, 248, 0.22);
+  transition: var(--transition);
+  position: relative;
+  cursor: pointer;
+}
+
+.sim-plate-card:hover {
+  transform: scale(1.06) rotate(3deg);
+}
+
+.sim-plate-label {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0369a1;
+  text-transform: uppercase;
+}
+
+.sim-plate-items-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: 100px;
+  margin: 4px 0;
+}
+
+.sim-item-icon {
+  font-size: 1.5rem;
+  display: inline-block;
+  animation: popInItem 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popInItem {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sim-plate-badge {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.sim-formula-summary {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 20px;
+  border: 2.5px solid #cbd5e1;
+  text-align: center;
+}
+
+.sim-big-formula {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #312e81;
+  margin-bottom: 6px;
+}
+
+.sim-addition-text {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f766e;
+  background: #ccfbf1;
+  border: 1.5px dashed #5eead4;
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.sim-verbal-text {
+  font-size: 1.1rem;
+  color: #475569;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   MINIJUEGO 1: EL CONSTRUCTOR MÁGICO DE GRUPOS
+   ========================================================================= */
+.builder-game-board {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  border: 4px solid #10b981;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.builder-header-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: left;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 14px;
+}
+
+.builder-plates-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 8px;
+  background: #f0fdf4;
+  border-radius: var(--radius-md);
+  border: 2.5px dashed #86efac;
+  min-height: 150px;
+}
+
+.builder-nest-card {
+  background: #ffffff;
+  border: 3.5px solid #cbd5e1;
+  border-radius: 24px;
+  padding: 12px 14px;
+  min-width: 110px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.builder-nest-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  border-color: #4f46e5;
+}
+
+.builder-nest-card.ready {
+  border-color: #10b981;
+  background: #ecfdf5;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.builder-nest-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  max-width: 90px;
+  min-height: 40px;
+}
+
+.builder-live-summary {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-top: 14px;
+}
+
+/* ==========================================================================
+   MINIJUEGO 2: ATRAPA-BURBUJAS EN EL RÍO MÁGICO (CON FÍSICAS)
+   ========================================================================= */
+.catch-river-arena {
+  width: 100%;
+  max-width: 760px;
+  height: 480px;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+  border-radius: var(--radius-lg);
+  border: 4px solid #7dd3fc;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.catch-target-box {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  border: 2.5px solid #facc15;
+  text-align: center;
+  z-index: 20;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.catch-target-formula {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 1px;
+}
+
+.catch-hint-pill {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #38bdf8;
+  margin-top: 2px;
+}
+
+.dynamic-river-bubble {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35), inset 0 3px 6px rgba(255,255,255,0.4);
+  border: 2.5px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.1s ease;
+  z-index: 10;
+}
+
+.dynamic-river-bubble:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+.dynamic-river-bubble.popped {
+  animation: poppedBubble 0.35s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes poppedBubble {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(245, 158, 11, 0)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6)); }
+}
+
+
+/* ==========================================================================
+   TARJETAS MÁGICAS 3D (REEMPLAZO DE LABORATORIO - FLASHCARDS INTERACTIVAS)
+   ========================================================================== */
+.magic-card-perspective-box {
+  perspective: 1200px;
+  width: 100%;
+  max-width: 440px;
+  height: 380px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.magic-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+}
+
+.magic-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.magic-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #cbd5e1;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+}
+
+.magic-card-front {
+  background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
+}
+
+.magic-card-back {
+  transform: rotateY(180deg);
+}
+
+/* ==========================================================================
+   JUEGO 1: TIRO AL BLANCO MATEMÁTICO (DIANA DE ESTRELLAS)
+   ========================================================================== */
+.target-shooting-arena {
+  width: 100%;
+  max-width: 760px;
+  height: 480px;
+  background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 100%);
+  border-radius: var(--radius-lg);
+  border: 4px solid #facc15;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 20px;
+  overflow: hidden;
+}
+
+.shooting-target-banner {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 2px solid #f59e0b;
+  border-radius: var(--radius-full);
+  padding: 8px 24px;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.shooting-formula {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+}
+
+.shooting-targets-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: auto 0;
+  z-index: 5;
+}
+
+.floating-target-bullseye {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  border: 3.5px solid #ffffff;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: floatKawaii 3.5s ease-in-out infinite alternate;
+  user-select: none;
+}
+
+.floating-target-bullseye:hover {
+  transform: scale(1.15) rotate(4deg);
+  filter: brightness(1.1);
+}
+
+.bullseye-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2.5px dashed rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bullseye-number {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.floating-target-bullseye.hit-explode {
+  animation: explodeTarget 0.45s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes explodeTarget {
+  0% { transform: scale(1); filter: brightness(1.5); }
+  50% { transform: scale(1.4); opacity: 0.8; filter: drop-shadow(0 0 20px #facc15); }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.floating-target-bullseye.wrong-shake {
+  animation: shake 0.35s ease;
+  background: #ef4444 !important;
+}
+
+.flying-shooting-star {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  font-size: 2.5rem;
+  pointer-events: none;
+  animation: shootStarFly 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  z-index: 20;
+}
+
+@keyframes shootStarFly {
+  0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -200px) scale(1.8) rotate(180deg); opacity: 0; }
+}
+
+.shooting-player-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.shooting-mascot-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 41, 59, 0.9);
+  border: 2px solid #475569;
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+}
+
+/* ==========================================================================
+   MUCHA MÁS ANIMACIÓN Y VIDA EN TODO EL PROYECTO
+   ========================================================================== */
+
+/* 1. Mascotas que flotan y respiran continuamente */
+.mascot-avatar-bob, .table-creature-avatar img, .brand-logo-img {
+  animation: mascotBob 3.2s ease-in-out infinite;
+}
+
+@keyframes mascotBob {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(2.5deg); }
+}
+
+/* 2. Brillo luminoso continuo que viaja por botones principales (Shimmer Sweep) */
+.btn-primary, .btn-accent, .btn-success {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after, .btn-accent::after, .btn-success::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  animation: shimmerSweep 3.6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes shimmerSweep {
+  0% { left: -60%; }
+  35%, 100% { left: 140%; }
+}
+
+/* 3. Monedas que giran sobre su eje en 3D */
+.stat-pill.score img {
+  animation: coinSpin3D 4s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes coinSpin3D {
+  0%, 80% { transform: rotateY(0deg); }
+  90% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+/* 4. Racha de fuego con llama ardiente y pulsación */
+.stat-pill.streak span:first-child {
+  display: inline-block;
+  animation: flamePulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes flamePulse {
+  0% { transform: scale(1) rotate(-3deg); filter: drop-shadow(0 0 2px #ef4444); }
+  100% { transform: scale(1.22) rotate(4deg); filter: drop-shadow(0 0 8px #f59e0b); }
+}
+
+/* 5. Estrellas con destellos titilantes */
+.table-star-icon.earned, .stat-pill.stars span:first-child {
+  display: inline-block;
+  animation: starTwinkle 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes starTwinkle {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); }
+  100% { transform: scale(1.15) rotate(6deg); filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8)); }
+}
+
+/* 6. Barra de progreso con gradiente líquido animado en continuo movimiento */
+.progress-fill {
+  background: linear-gradient(
+    90deg,
+    #10b981 0%,
+    #38bdf8 30%,
+    #f59e0b 60%,
+    #ec4899 85%,
+    #10b981 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: liquidProgress 4s linear infinite;
+}
+
+@keyframes liquidProgress {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* 7. Rebote táctil elástico al hacer clic en tarjetas o botones */
+.zone-card:active, .table-card:active, .game-action-card:active, .nav-tab-btn:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* 8. Aura luminosa y elevación al pasar el mouse por tarjetas */
+.zone-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(16, 185, 129, 0.22);
+}
+
+.table-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.22);
+}
+
+.game-action-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(245, 158, 11, 0.22);
+}
+
+/* 9. Entrada elástica juguetona para modales */
+.modal-overlay.open .modal-window {
+  animation: modalPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modalPopIn {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* ==========================================================================
+   ESTILOS DEL SISTEMA DE BLOQUEO Y DESBLOQUEO DEL ENSAYO SIMCE
+   ========================================================================== */
+.simce-locked-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
+  border: 3.5px solid #e2e8f0;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.simce-locked-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #f59e0b);
+}
+
+.simce-lock-header {
+  margin-bottom: 24px;
+}
+
+.simce-lock-icon-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  border: 3px solid #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
+}
+
+.simce-big-lock-icon {
+  font-size: 2.8rem;
+  animation: floatKawaii 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+.simce-lock-pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #f59e0b;
+  animation: pulseGlow 2s infinite;
+  pointer-events: none;
+}
+
+.simce-lock-status-badge {
+  display: inline-block;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1.5px solid #fca5a5;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.simce-lock-title {
+  font-size: 2.2rem;
+  color: #1e1b4b;
+  margin-bottom: 8px;
+}
+
+.simce-lock-description {
+  font-size: 1.15rem;
+  color: #475569;
+  font-weight: 600;
+  line-height: 1.6;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Barra de progreso de desbloqueo */
+.simce-unlock-progress-box {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  max-width: 680px;
+  margin: 24px auto 26px;
+}
+
+.simce-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.simce-progress-header strong {
+  color: #d97706;
+  font-size: 1.05rem;
+}
+
+.simce-unlock-progress-bar-bg {
+  width: 100%;
+  height: 16px;
+  background: #e2e8f0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.simce-unlock-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #10b981);
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Lista interactiva de las 9 tablas */
+.simce-tables-checklist-header {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin-bottom: 14px;
+  text-align: left;
+  max-width: 740px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.simce-tables-checklist {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 740px;
+  margin: 0 auto 28px;
+}
+
+@media (max-width: 640px) {
+  .simce-tables-checklist {
+    grid-template-columns: 1fr;
+  }
+}
+
+.simce-check-card {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-align: left;
+}
+
+.simce-check-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.simce-check-card.completed {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.simce-check-card.pending {
+  border-color: #fed7aa;
+  background: #fffbeb;
+}
+
+.simce-check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.simce-check-num {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.simce-check-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-wait {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.simce-check-action-hint {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.simce-lock-actions {
+  margin-bottom: 24px;
+}
+
+/* Panel especial para profesor / evaluador */
+.simce-teacher-unlock-panel {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 740px;
+  margin: 0 auto;
+  text-align: left;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.teacher-panel-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Banner de felicitación por desbloqueo */
+.simce-unlocked-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #ecfdf5 100%);
+  border: 2.5px solid #10b981;
+  color: #065f46;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.2);
+}
+
+/* Efectos visuales de navegación */
+.unlocked-glow {
+  border-color: #10b981 !important;
+  color: #047857 !important;
+  font-weight: 800 !important;
+  animation: pulseGlow 2.5s infinite;
+}
+
+.locked-tab {
+  opacity: 0.88;
+}
