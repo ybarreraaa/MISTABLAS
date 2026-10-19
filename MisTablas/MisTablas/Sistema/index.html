@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <title>Mundo Multiplica | Mis Tablas en 4° Básico</title>
+  <link rel="icon" type="image/svg+xml" href="IMAGEN/star.svg">
+  <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+
+  <!-- Floating kawaii mathematics background elements -->
+  <div class="floating-math-bg">
+    <span class="floating-math-item" style="top: 10%; left: 6%; font-size: 2.8rem; color: #f59e0b;">✨</span>
+    <span class="floating-math-item" style="top: 60%; left: 4%; font-size: 2.4rem; color: #38bdf8; animation-delay: 2s;">✏️</span>
+    <span class="floating-math-item" style="top: 18%; right: 7%; font-size: 3rem; color: #ec4899; animation-delay: 4s;">⭐</span>
+    <span class="floating-math-item" style="top: 72%; right: 5%; font-size: 3.2rem; color: #10b981; animation-delay: 1s;">💡</span>
+    <span class="floating-math-item" style="top: 42%; left: 90%; font-size: 2.6rem; color: #8b5cf6; animation-delay: 3s;">×</span>
+    <span class="floating-math-item" style="top: 85%; left: 45%; font-size: 2.8rem; color: #f97316; animation-delay: 5s;">123</span>
+  </div>
+
+  <!-- Top Navigation & Header -->
+  <header class="app-header">
+    <div class="header-content">
+      
+      <!-- Brand Logo -->
+      <div class="brand-wrapper" onclick="window.misTablasApp.switchMainTab('adventure')">
+        <img src="IMAGEN/logo.svg" alt="Mundo Multiplica en 4° Básico" class="brand-logo-img">
+      </div>
+
+      <!-- Quick Stats Pills (Level, Streak, Score, Stars, Profile) -->
+      <div class="header-stats">
+        
+        <!-- Nivel del Entrenador -->
+        <div class="stat-pill level" title="Nivel del Estudiante">
+          <span>👑</span>
+          <span id="statLevelVal">Nivel 1</span>
+        </div>
+
+        <!-- Racha de Días -->
+        <div class="stat-pill streak" title="Racha de Días de Práctica">
+          <span>🔥</span>
+          <span id="statStreakDaysVal">3 días</span>
+        </div>
+
+        <!-- Monedas / Puntos -->
+        <div class="stat-pill score" title="Monedas Acumuladas">
+          <img src="IMAGEN/coin.svg" alt="Moneda" style="width: 20px; height: 20px;">
+          <span id="statScoreVal">0</span>
+          <span style="font-size: 0.75rem; color: #b45309;">pts</span>
+        </div>
+
+        <!-- Estrellas -->
+        <div class="stat-pill stars" title="Estrellas Recolectadas">
+          <span>★</span>
+          <span id="statStarsVal">0</span>
+        </div>
+
+        <!-- Student Profile Widget -->
+        <div class="user-profile-badge">
+          <div class="user-avatar-mini">
+            <img id="headerAvatarImg" src="IMAGEN/avatar1.svg" alt="Avatar">
+          </div>
+          <div class="user-info-text">
+            <span class="user-name-label" id="headerStudentName">Estudiante</span>
+            <span class="user-grade-tag">4° Básico</span>
+          </div>
+        </div>
+
+        <!-- Audio toggle & Logout -->
+        <button type="button" class="btn btn-secondary btn-icon" id="btnMuteToggle" title="Sonido">🔊</button>
+        <button type="button" class="btn btn-secondary btn-icon" id="btnLogout" title="Cambiar de Estudiante" style="color: #ef4444;">🚪</button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container -->
+  <main class="container">
+
+    <!-- Mascot Greeting Banner with "Continuar Aventura" -->
+    <section class="mascot-greeting-banner">
+      <div class="greeting-text-box">
+        <h2>
+          <span>👋</span> 
+          ¡Hola, <span id="bannerStudentName" style="color: #4f46e5;">Campeón</span>! 
+          <span>🌟</span>
+        </h2>
+        <p>Bienvenido al <strong>Mundo Multiplica</strong>. ¡Aprende el secreto de las tablas, supera desafíos y colecciona criaturas!</p>
+        
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+          <button type="button" class="btn btn-primary" id="btnContinueAdventure" style="font-size: 1.15rem; padding: 12px 24px;">
+            <span>▶ Continuar Aventura</span> 🚀
+          </button>
+          <div class="cute-ribbon-pill" id="btnGuideBannerPill" style="cursor:pointer;" title="Toca para ver la guía didáctica">
+            <span>💡</span> ¿Por qué 3 × 4 = 12? ¡Toca aquí! <span>✨</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar-wrapper">
+        <div class="progress-track">
+          <div class="progress-fill" id="globalProgressBar"></div>
+        </div>
+        <div class="progress-track-label">
+          <span>Progreso General del Mundo</span>
+          <span id="globalProgressText">0%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         BARRA DE NAVEGACIÓN SUPERIOR (Píldoras Centrales Kawaii)
+         ========================================================================= -->
+    <nav class="main-nav-bar" aria-label="Navegación de Secciones">
+      <button type="button" class="nav-tab-btn active" data-tab="adventure">
+        <span>🗺️</span> <span>Aventura (Zonas)</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="guide" style="border-color:#fde047; background:#fffbeb; color:#92400e;">
+        <span>💡</span> <span>¿Qué es Multiplicar?</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="tables">
+        <span>🌟</span> <span>Aprender Tablas (2 al 10)</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="games">
+        <span>🎮</span> <span>Minijuegos</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="daily">
+        <span>⚡</span> <span>Desafío Diario</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="collection">
+        <span>📖</span> <span>Colección</span>
+      </button>
+
+      <button type="button" class="nav-tab-btn" data-tab="simce">
+        <span>📝</span> <span>Ensayo SIMCE</span>
+      </button>
+    </nav>
+
+    <!-- =======================================================================
+         SECCIÓN 1: AVENTURA (MAPA DE LAS 5 ZONAS)
+         ======================================================================= -->
+    <section id="section-adventure" class="view-section active">
+      <div class="section-header-box">
+        <h2><span>🗺️</span> Mapa de Zonas: Mundo Multiplica</h2>
+        <p>Avanza por cada región temática para liberar a sus mascotas, aprender sus trucos y desafiar al Jefe de Zona.</p>
+      </div>
+
+      <!-- Map Zones Grid -->
+      <div class="map-zones-grid" id="adventureZonesGrid"></div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 2: GUÍA MAESTRA "¿QUÉ ES MULTIPLICAR Y POR QUÉ 3 × 4 = 12?"
+         ======================================================================= -->
+    <section id="section-guide" class="view-section">
+      <div class="section-header-box">
+        <h2><span>💡</span> El Secreto de la Multiplicación: Paso a Paso</h2>
+        <p>Aprende de forma simple y visual. Descubre por qué multiplicar es una suma rápida y divertida de grupos iguales.</p>
+      </div>
+
+      <div id="masterGuideContent"></div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 3: APRENDER TABLAS (DEL 2 AL 10 EN TARJETAS INDIVIDUALES)
+         ======================================================================= -->
+    <section id="section-tables" class="view-section">
+      <div class="section-header-box">
+        <h2><span>🌟</span> Aprender y Practicar Tablas del 2 al 10</h2>
+        <p>Toca cualquier tabla para aprender con su mascota, ver sus grupos de objetos animados, descubrir su truco y ganar 3 estrellas.</p>
+      </div>
+
+      <!-- Tables Grid -->
+      <div class="tables-grid" id="tablesGrid"></div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 4: MINIJUEGOS DINÁMICOS DE ACCIÓN Y COMPRENSIÓN
+         ======================================================================= -->
+    <section id="section-games" class="view-section">
+      <div class="section-header-box">
+        <h2><span>🎮</span> Minijuegos Interactivos de Comprensión y Acción</h2>
+        <p>¡Aquí las multiplicaciones forman parte de la aventura! Construye grupos, atrapa en el río, combate monstruos y corre por la pista.</p>
+      </div>
+
+      <div class="games-action-grid">
+        
+        <!-- 1. Tiro al Blanco Matemático (Puntería y Reflejos Kawaii) -->
+        <article class="game-action-card" data-game="target" style="border-color: #f59e0b;">
+          <div>
+            <div class="game-action-badge" style="background: #fefce8; color: #b45309;">🎯</div>
+            <h3 class="game-action-title">1. Tiro al Blanco</h3>
+            <p class="game-action-desc">¡Apunta a la diana con la respuesta correcta! Dispara estrellas mágicas que explotan en chispas de oro y confeti.</p>
+          </div>
+          <button type="button" class="btn btn-accent btn-sm">¡Disparar! ➔</button>
+        </article>
+
+        <!-- 2. Atrapa-Burbujas en el Río Mágico (Físicas en Tiempo Real) -->
+        <article class="game-action-card" data-game="catch" style="border-color: #0284c7;">
+          <div>
+            <div class="game-action-badge" style="background: #f0f9ff; color: #0284c7;">🌊</div>
+            <h3 class="game-action-title">2. Atrapa en el Río</h3>
+            <p class="game-action-desc">Las burbujas con números flotan y rebotan por la corriente en tiempo real. ¡Apunta y atrapa la respuesta correcta antes de que escape!</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" style="background:#0284c7; border:none;">¡Atrapar! ➔</button>
+        </article>
+
+        <!-- 3. Batalla Épica RPG de Criaturas -->
+        <article class="game-action-card" data-game="battle" style="border-color: #818cf8;">
+          <div>
+            <div class="game-action-badge" style="background: #eef2ff; color: #4f46e5;">⚔️</div>
+            <h3 class="game-action-title">3. Batalla de Criaturas</h3>
+            <p class="game-action-desc">Lanza hechizos y ataques mágicos con multiplicaciones. ¡Logra rachas para activar ataques especiales con doble daño!</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm">¡Luchar! ➔</button>
+        </article>
+
+        <!-- 4. Carrera Matemática Turbo -->
+        <article class="game-action-card" data-game="race" style="border-color: #ea580c;">
+          <div>
+            <div class="game-action-badge" style="background: #fff7ed; color: #ea580c;">🏎️</div>
+            <h3 class="game-action-title">4. Carrera Matemática</h3>
+            <p class="game-action-desc">¡Duelo de velocidad en la pista! Responde rápido para encender el fuego nitro 🚀 y llegar primero a la meta.</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" style="background:#ea580c; border:none;">¡Correr! ➔</button>
+        </article>
+
+        <!-- 5. Memoria Mágica 3D -->
+        <article class="game-action-card" data-game="memory" style="border-color: #3b82f6;">
+          <div>
+            <div class="game-action-badge" style="background: #eff6ff; color: #2563eb;">🃏</div>
+            <h3 class="game-action-title">5. Memoria Mágica 3D</h3>
+            <p class="game-action-desc">Cartas 3D con giro suave. Encuentra la pareja que conecta la multiplicación con su resultado exacto.</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" style="background:#2563eb; border:none;">¡Emparejar! ➔</button>
+        </article>
+
+        <!-- 6. El Impostor Matemático -->
+        <article class="game-action-card" data-game="impostor" style="border-color: #ef4444;">
+          <div>
+            <div class="game-action-badge" style="background: #fef2f2; color: #dc2626;">🕵️</div>
+            <h3 class="game-action-title">6. El Impostor Matemático</h3>
+            <p class="game-action-desc">¡Pensamiento crítico! Aparecen 4 operaciones y una de ellas tiene una trampa falsa. ¡Descubre al impostor!</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" style="background:#ef4444; border:none;">¡Investigar! ➔</button>
+        </article>
+
+        <!-- 7. Combo Relámpago (60 Segundos) -->
+        <article class="game-action-card" data-game="combo" style="border-color: #f59e0b;">
+          <div>
+            <div class="game-action-badge" style="background: #fffbeb; color: #b45309;">⚡</div>
+            <h3 class="game-action-title">7. Combo Relámpago</h3>
+            <p class="game-action-desc">60 segundos de adrenalina pura. Responde multiplicaciones seguidas para multiplicar tus puntos en Combo x2, x3 y x4.</p>
+          </div>
+          <button type="button" class="btn btn-accent btn-sm">¡A toda velocidad! ➔</button>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 5: DESAFÍO DIARIO (Para Mantener la Racha)
+         ======================================================================= -->
+    <section id="section-daily" class="view-section">
+      <div class="section-header-box">
+        <h2><span>⚡</span> Desafío Diario de Mundo Multiplica</h2>
+        <p>Completa tu reto de hoy para mantener activa tu racha de días consecutivos y ganar monedas extra.</p>
+      </div>
+
+      <div style="background:#ffffff; border-radius:28px; padding:36px; border:4px solid #fde047; max-width:680px; margin:0 auto; text-align:center; box-shadow:var(--shadow-card);">
+        <div style="font-size:4rem; margin-bottom:8px;">🔥</div>
+        <h3 style="font-size:2rem; color:#1e1b4b; margin-bottom:6px;">Misión del Día</h3>
+        <div class="cute-ribbon-pill" style="font-size:1.1rem; margin-bottom:16px;">
+          Racha actual: <span style="font-weight:900;">3 días seguidos</span> 🔥
+        </div>
+        <p style="font-size:1.15rem; color:#64748b; font-weight:600; line-height:1.5; margin-bottom:24px;">
+          Resuelve la ronda relámpago diaria de operaciones para ganar <strong>+300 Monedas Doradas 🪙</strong> y asegurar tu racha de hoy.
+        </p>
+
+        <button type="button" class="btn btn-accent" id="btnStartDailyChallenge" style="font-size:1.3rem; padding:18px 36px;">
+          <span>¡Jugar Desafío Diario!</span> ⚡
+        </button>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 6: COLECCIÓN DE CRIATURAS (ÁLBUM / POKÉDEX KAWAII)
+         ======================================================================= -->
+    <section id="section-collection" class="view-section">
+      <div class="section-header-box">
+        <h2><span>📖</span> Álbum de Colección de Criaturas</h2>
+        <p>¡Colecciona a las 9 mascotas del Mundo Multiplica! Cada criatura se desbloquea al aprender y dominar su tabla.</p>
+      </div>
+
+      <div class="collection-grid" id="collectionGrid"></div>
+    </section>
+
+    <!-- =======================================================================
+         SECCIÓN 7: ENSAYO SIMCE
+         ======================================================================= -->
+    <section id="section-simce" class="view-section">
+      
+      <!-- 1. Pantalla de Bloqueo (Se muestra si faltan tablas por completar) -->
+      <div id="simceLockedScreen" class="simce-locked-card" style="display: none;">
+        <div class="simce-lock-header">
+          <div class="simce-lock-icon-wrap">
+            <span class="simce-big-lock-icon">🔒</span>
+            <div class="simce-lock-pulse-ring"></div>
+          </div>
+          <span class="simce-lock-status-badge">DESAFÍO FINAL BLOQUEADO</span>
+          <h2 class="simce-lock-title">Ensayo Matemático Tipo SIMCE 4° Básico</h2>
+          <p class="simce-lock-description">
+            ¡Esta es la gran evaluación final de Mundo Multiplica! Para desbloquear el Ensayo SIMCE oficial, 
+            primero debes <strong>completar y dominar las 9 tablas de multiplicar (del 2 al 10)</strong>.
+          </p>
+        </div>
+
+        <!-- Barra de Progreso hacia el Desbloqueo -->
+        <div class="simce-unlock-progress-box">
+          <div class="simce-progress-header">
+            <span>Requisito para Desbloquear el Ensayo:</span>
+            <strong id="simceUnlockCountText">0 de 9 Tablas Dominadas (0%)</strong>
+          </div>
+          <div class="simce-unlock-progress-bar-bg">
+            <div class="simce-unlock-progress-bar-fill" id="simceUnlockProgressFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Mosaico interactivo de las 9 tablas requeridas -->
+        <div class="simce-tables-checklist-header">
+          <span>📋</span> Estado de tus 9 Tablas Requeridas:
+        </div>
+        <div class="simce-tables-checklist" id="simceTablesChecklist">
+          <!-- Se llena dinámicamente con badges de tablas completadas vs pendientes -->
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="simce-lock-actions">
+          <button type="button" class="btn btn-primary" id="btnGoUnlockTables" style="font-size: 1.15rem; padding: 14px 32px;">
+            <span>🚀 ¡Ir a Dominar Tablas Pendientes!</span>
+          </button>
+        </div>
+
+        <!-- Barra de Acceso Rápido para Docente / Evaluador -->
+        <div class="simce-teacher-unlock-panel">
+          <div class="teacher-panel-info">
+            <span style="font-size: 1.4rem;">🔑</span>
+            <div>
+              <strong style="color: #1e1b4b; font-size: 0.95rem;">Modo Docente / Evaluación de Proyecto:</strong>
+              <p style="font-size: 0.85rem; color: #64748b; margin: 2px 0 0;">¿Deseas evaluar o probar el Ensayo SIMCE ahora sin jugar las 9 tablas?</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-warning btn-sm" id="btnTeacherUnlockToggle" style="font-weight: 800;">
+            🔓 Desbloquear Ahora (Modo Evaluación)
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Pantalla de Introducción (Cuando el Ensayo está Desbloqueado) -->
+      <div id="simceIntroScreen" class="simce-main-card" style="text-align: center; max-width: 820px; margin: 0 auto;">
+        <div>
+          <div id="simceUnlockedNotice" class="simce-unlocked-banner" style="display: none;">
+            🎉 ¡FELICITACIONES! Has dominado todas las tablas requeridas. ¡El Ensayo SIMCE está Desbloqueado!
+          </div>
+          <div id="simceTeacherRelockWrap" style="margin-bottom: 20px; display: none;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnSimceRelockTeacher" style="font-weight: 700; font-size: 0.85rem;">
+              🔒 Volver a Bloquear Ensayo (Modo Normal)
+            </button>
+          </div>
+          <img src="IMAGEN/simce_badge.svg" alt="SIMCE 4° Básico" style="width: 110px; height: 110px; margin: 0 auto 16px; display: block; animation: floatKawaii 3s ease-in-out infinite;">
+          <h2 style="font-size: 2.2rem; color: #1e1b4b; margin-bottom: 8px;">Ensayo Matemático Tipo SIMCE</h2>
+          <div class="cute-ribbon-pill" style="font-size: 0.95rem; margin-bottom: 16px;">
+            EVALUACIÓN NACIONAL • 4° AÑO BÁSICO • MATEMÁTICA
+          </div>
+          <p style="font-size: 1.15rem; color: #475569; font-weight: 600; line-height: 1.6; max-width: 660px; margin: 0 auto 24px;">
+            Este ensayo contiene <strong>10 situaciones reales</strong> cercanas a tu vida escolar: 
+            compras en el quiosco, grupos en el aula, huerto escolar, salidas en furgón y kermesse.
+          </p>
+
+          <button type="button" class="btn btn-primary" id="btnStartSimce" style="font-size: 1.3rem; padding: 18px 40px;">
+            <span>¡Comenzar Ensayo SIMCE!</span> 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- Testing Container -->
+      <div id="simceTestingContainer" style="display: none;">
+        <div class="simce-layout">
+          
+          <aside class="simce-sidebar">
+            <div style="text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9;">
+              <h4 style="font-size: 1.15rem; color: #1e1b4b;">Preguntas del Ensayo</h4>
+              <div class="cute-ribbon-pill" id="simceTimerDisplay" style="margin-top: 8px;">⏱️ 00:00</div>
+            </div>
+
+            <div class="simce-grid-nav" id="simceNavGrid"></div>
+
+            <div style="text-align: center; margin-bottom: 16px; font-size: 0.95rem; font-weight: 800; color: #475569;">
+              Respondidas: <span id="simceAnsweredCount" style="color: #10b981;">0 de 10</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <button type="button" class="btn btn-success" id="simceBtnFinish" style="width: 100%; font-size: 1.05rem;">
+                ✓ Finalizar Ensayo
+              </button>
+            </div>
+          </aside>
+
+          <div class="simce-main-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9;">
+                <span class="cute-ribbon-pill" id="simceQBadge" style="background:#e0e7ff; color:#3730a3; border-color:#818cf8;">Pregunta 1 de 10</span>
+                <span class="classroom-note-badge" id="simceContextTag">Contexto</span>
+              </div>
+
+              <div class="simce-problem-text" id="simceProblemText">
+                Cargando problema contextualizado...
+              </div>
+
+              <div class="simce-options-list" id="simceOptionsList"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-top: 2px solid #f1f5f9; padding-top: 20px; flex-wrap: wrap; gap: 12px;">
+              <button type="button" class="btn btn-secondary" id="simceBtnPrev">⬅ Anterior</button>
+              <button type="button" class="btn btn-primary" id="simceBtnNext">Siguiente ➔</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="simceResultScreen" style="display: none;"></div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: LABORATORIO Y APRENDIZAJE DE LA TABLA
+       ========================================================================= -->
+  <div class="modal-overlay" id="tableModalOverlay">
+    <div class="modal-window">
+      
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <div class="modal-creature-mini">
+            <img id="tableModalCreatureImg" src="IMAGEN/creature2.svg" alt="Mascota">
+          </div>
+          <div>
+            <span id="tableModalBadge" class="cute-ribbon-pill" style="font-size:0.75rem; padding:3px 10px; color:#ffffff;">TABLA</span>
+            <h3 id="tableModalTitle" style="font-size: 1.45rem; color: #1e1b4b; margin-top: 2px;">Exploración de la Tabla</h3>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" id="tableModalClose" title="Cerrar ventana">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <div class="table-play-tabs">
+          <button type="button" class="table-play-tab active" id="tabExplore">
+            💡 Paso a Paso con la Mascota
+          </button>
+          <button type="button" class="table-play-tab" id="tabCards">
+            ✨ Tarjetas Mágicas (Ver Secreto)
+          </button>
+          <button type="button" class="table-play-tab" id="tabPractice">
+            ⭐ Desafío Interactivo (Gana Estrellas)
+          </button>
+        </div>
+
+        <!-- Vista 1: Exploración Paso a Paso -->
+        <div id="viewExplore">
+          <div style="text-align: center; margin-bottom: 12px; font-weight: 700; color: #64748b; font-size: 1.05rem;">
+            Avanza paso a paso para ver cómo se agrupa cada número:
+          </div>
+
+          <div class="multiplier-bar" id="multiplierBar"></div>
+
+          <div class="copisi-display-card">
+            <div class="copisi-formula-title" id="copisiFormula">6 × 3 = 18</div>
+            <div class="copisi-repeated-addition" id="copisiAddition">6 + 6 + 6 = 18 (3 veces 6)</div>
+            <p id="copisiMeaningText" style="font-size:1.05rem; color:#475569; font-weight:700; max-width:620px; margin:0 auto 12px;"></p>
+            
+            <div style="font-weight: 800; color: #0369a1; font-size: 1.05rem; margin-top: 14px;">
+              📦 Grupos y Objetos de Colección:
+            </div>
+            <div class="visual-groups-container" id="visualGroups"></div>
+          </div>
+
+          <div class="number-line-container">
+            <div style="font-weight: 800; font-size: 1rem; color: #4338ca; margin-bottom: 8px;">
+              🐇 Saltos Iguales en la Recta Numérica:
+            </div>
+            <div class="number-line-track" id="numberLineTrack"></div>
+          </div>
+
+          <div class="secret-pattern-box">
+            <div class="secret-pattern-icon">💡</div>
+            <div class="secret-pattern-text">
+              <h4 id="patternHeading">¡Patrón Secreto y Truco de la Mascota!</h4>
+              <p id="patternText">Cargando patrón...</p>
+              <p id="trickText" style="margin-top: 6px; font-weight: 700; color: #b45309;">Cargando truco...</p>
+              <p id="tableMeaningDesc" style="margin-top: 6px; font-size:0.92rem; color:#475569; font-style:italic;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista 2: Tarjetas Mágicas 3D -->
+        <div id="viewCards" style="display: none;"></div>
+
+        <!-- Vista 3: Práctica Interactiva -->
+        <div id="viewPractice" style="display: none;">
+          <div class="practice-container" id="practiceContainer"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: GAME ARENA (Pantalla de Juegos)
+       ========================================================================= -->
+  <div class="game-arena-overlay" id="gameArenaOverlay">
+    <div class="game-arena-header">
+      <div class="arena-title-box">
+        <h3 id="arenaTitle">Título del Juego</h3>
+      </div>
+      <div class="arena-stats-bar">
+        <div class="arena-stat score" id="arenaScore">0 pts</div>
+        <div class="arena-stat streak" id="arenaStreak">0 racha</div>
+        <button type="button" class="modal-close-btn" id="arenaCloseBtn" title="Salir del juego" style="background:#334155; color:#ffffff;">✕</button>
+      </div>
+    </div>
+    <div class="game-arena-body" id="arenaBody"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="JS/tables.js"></script>
+  <script src="JS/games.js"></script>
+  <script src="JS/simce.js"></script>
+  <script src="JS/app.js"></script>
+</body>
+</html>
